@@ -572,6 +572,7 @@ class _ChatScreenState extends State<ChatScreen> {
     print("length = ${listOfTokenId.length}");
     if(listOfTokenId.length>0)
       {
+        print(widget.groupData!["data"]["name"]);
         int j=0;
         while(j<listOfTokenId.length)
           {
@@ -585,7 +586,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 "to": listOfTokenId[j],
                 "notification": {
                   "body": message,
-                  "title": senderId
+                  "title": widget.userData["name"]
                 }
               });
               request.headers.addAll(headers);
@@ -654,7 +655,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
     final size = MediaQuery.of(context).size;
-    print("user name is ${widget.userData["name"]}");
+    print("user name is ${widget.userData}");
     print("USer = ${widget.groupData}");
     return Scaffold(
       appBar: AppBar(
