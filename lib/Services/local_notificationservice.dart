@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/screens/groups_list.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path/path.dart';
 import 'package:rxdart/rxdart.dart';
+
+
 
 class LocalNotificationService{
 
@@ -24,9 +27,47 @@ class LocalNotificationService{
   // {
   //   Navigator.push(context, MaterialPageRoute(builder: (context)=>GroupsList()));
   // }
+
+ static Future<Map<String, dynamic>> display(RemoteMessage message,courseName)async{
+              try {
+                FirebaseFirestore _firestore=FirebaseFirestore.instance;
+                final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+                const NotificationDetails notificationDetails = NotificationDetails(
+                  android: AndroidNotificationDetails(
+                      "CloudyML",
+                      "CloudyMLchannel",
+                      importance: Importance.max,
+                      priority: Priority.high,
+                      color: Colors.green,
+                      playSound: true,
+                      channelDescription: 'Chat Notification'
+                  ),
+                );
+                String imageUrl = message.notification!.android!.imageUrl??'';
+                var data = {"ID":id,"student_id":FirebaseAuth.instance.currentUser!.uid,"CourseName":courseName};
+                await _notificationsPlugin.show(
+                  id,
+                  message.notification!.title,
+                  message.notification!.body,
+                  notificationDetails,
+                  //payload: message.data['_id'],
+                );
+                return data;
+                // _firestore.collection('Notifications')
+                //     .add({
+                //       'title':message.notification!.title,
+                //       'description':message.notification!.body,
+                //       'icon':imageUrl
+                // });
+              } on Exception catch (e) {
+                print(e);
+                return {};
+              }
+ }
+
   static void createanddisplaynotification(RemoteMessage message) async {
     try {
-      FirebaseFirestore _firestore=FirebaseFirestore.instance;
+      FirebaseFirestore _firestore = FirebaseFirestore.instance;
       final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       const NotificationDetails notificationDetails = NotificationDetails(
         android: AndroidNotificationDetails(
@@ -35,12 +76,12 @@ class LocalNotificationService{
           importance: Importance.max,
           priority: Priority.high,
           color: Colors.green,
-
           playSound: true,
           channelDescription: 'Chat Notification'
         ),
       );
       String imageUrl = message.notification!.android!.imageUrl??'';
+
       await _notificationsPlugin.show(
         id,
         message.notification!.title,
@@ -92,7 +133,7 @@ class LocalNotificationService{
           "CloudyMLchannel",
           styleInformation: bigPicture,
           importance: Importance.max,
-          priority: Priority.high,
+          priority: Priority.high
         )
       );
   }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../helpers/file_handler.dart';
 import 'dart:io';
-
+import 'package:hexcolor/hexcolor.dart';
 class ImageMsgTile extends StatefulWidget {
   final Map<String, dynamic>? map;
   final String? displayName;
@@ -42,13 +42,16 @@ class _ImageMsgTileState extends State<ImageMsgTile> {
           : Alignment.centerLeft,
       child: InkWell(
         onTap: () {
-          openFile(url: widget.map!["link"], fileName: widget.map!["message"]);
+          print("Clicked--------")
+;          openFile(url: widget.map!["link"], fileName: widget.map!["message"]);
         },
         child: Container(
           width: size.width * 0.5,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(25),
-            color: Color(0xFF7860DC),
+            color: widget.map!["sendBy"] == widget.displayName
+                ? HexColor("#6da2f7")
+                : HexColor("#b3afb0"),
             // gradient: const RadialGradient(
             //     center: Alignment.topRight,
             //     // near the top right
@@ -69,7 +72,7 @@ class _ImageMsgTileState extends State<ImageMsgTile> {
                       child: Text(
                         widget.map!["sendBy"],
                         style: TextStyle(
-                            color: Color.fromARGB(255, 84, 215, 184),
+                            color: Colors.black,
                             fontWeight: FontWeight.bold),
                       ),
                     ),

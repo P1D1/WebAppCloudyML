@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../helpers/file_handler.dart';
-
+import 'package:hexcolor/hexcolor.dart';
 class FileMsgTile extends StatefulWidget {
   final size;
   final Map<String, dynamic>? map;
@@ -48,14 +48,15 @@ class _FileMsgTileState extends State<FileMsgTile> {
         width: widget.size.width * 0.5,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(25),
-          gradient: const RadialGradient(
-              center: Alignment.topRight,
-              // near the top right
-              radius: 6,
-              colors: [
-                Colors.purple,
-                Colors.blue,
-              ]),
+          color: widget.map!["sendBy"] == widget.displayName
+              ? HexColor("#6da2f7")
+              : HexColor("#b3afb0")
+          // gradient: RadialGradient(
+          //     center: Alignment.topRight,
+          //     // near the top right
+          //     radius: 6,
+          //     // colors: []
+          // ),
         ),
         alignment: Alignment.center,
         child: widget.map!['link'] != ""
@@ -71,7 +72,7 @@ class _FileMsgTileState extends State<FileMsgTile> {
                       child: Text(
                         widget.map!["sendBy"],
                         style: TextStyle(
-                            color: Colors.amber[900],
+                            color: Colors.black,
                             fontWeight: FontWeight.bold),
                       ),
                     ),

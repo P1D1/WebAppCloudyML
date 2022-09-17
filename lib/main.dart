@@ -4,6 +4,7 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloudyml_app2/MyAccount/myaccount.dart';
 import 'package:cloudyml_app2/Providers/AppProvider.dart';
 import 'package:cloudyml_app2/Providers/UserProvider.dart';
+import 'package:cloudyml_app2/Providers/chat_screen_provider.dart';
 import 'package:cloudyml_app2/Services/database_service.dart';
 import 'package:cloudyml_app2/authentication/firebase_auth.dart';
 import 'package:cloudyml_app2/globals.dart';
@@ -19,20 +20,58 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive/hive.dart';
+
+
 
 
 //Recieve message when app is in background ...solution for on message
 Future<void> backgroundHandler(RemoteMessage message) async {
-  print(message.data.toString());
-  print(message.notification!.title);
-  LocalNotificationService.showNotificationfromApp(title: message.notification!.title,body: message.notification!.body);
+  // print("backgroundMessage=======================");
+  // print(message.data.toString());
+  // print(message.notification!.title);
+  // print(message.notification!.android!.count);
+  // print(message.ttl);
+
+  // int? ttl = message.ttl;
+  // print(message.messageId![0] as int);
+
+
+  //  final FlutterLocalNotificationsPlugin
+  // _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+
+
+  // print(message.notification.)
+  // LocalNotificationService.showNotificationfromApp(title: message.notification!.title,body: message.notification!.body);
+// LocalNotificationService.createanddisplaynotification(message);
+
+  // await Firebase.initializeApp();
+  // await Hive.initFlutter();
+  // await Hive.openBox('myBox');
+  // final myBox = Hive.box('myBox');
+  //   print("MEssage");
+  //   var data = await LocalNotificationService.display(message,message.notification!.title);
+  //   print("Background = $data");
+  //   await myBox.put(data["ID"], data);
+  //   await myBox.delete(data["ID"]);
+  //   print("Message removed");
 
 }
 
+
+final FlutterLocalNotificationsPlugin
+_flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
 Future<void> main() async {
+
+  await Hive.initFlutter();
+  await Hive.openBox('myBox');
   WidgetsFlutterBinding.ensureInitialized();
   AwesomeNotifications().initialize(null, [
     NotificationChannel(
@@ -45,9 +84,12 @@ Future<void> main() async {
         defaultColor: Colors.green,
     )
   ]);
+
   await Firebase.initializeApp();
+
   FirebaseMessaging.onBackgroundMessage(backgroundHandler);
   LocalNotificationService.initialize();
+  await _flutterLocalNotificationsPlugin.cancelAll();
   runApp(MaterialApp(debugShowCheckedModeBanner: false, home: MyApp()));
 
   SystemChrome.setSystemUIOverlayStyle(
@@ -210,6 +252,7 @@ class MyApp extends StatelessWidget {
         isIgnoring: true,
         child: MultiProvider(
           providers: [
+            ChangeNotifierProvider(create: (_)=>ChatScreenNotifier(),child: ChatScreen()),
             ChangeNotifierProvider.value(value: UserProvider.initialize()),
             ChangeNotifierProvider.value(value: AppProvider()),
             StreamProvider<List<CourseDetails>>.value(

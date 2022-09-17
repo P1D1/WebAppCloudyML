@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../helpers/file_handler.dart';
-
+import 'package:hexcolor/hexcolor.dart';
 class AudioMsgTile extends StatefulWidget {
   final size;
   final Map<String, dynamic>? map;
@@ -49,7 +49,9 @@ class _AudioMsgTileState extends State<AudioMsgTile> {
         width: widget.size.width * 0.5,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(25),
-          color: Color(0xFF7860DC)
+          color: widget.map!["sendBy"] == widget.displayName
+              ? HexColor("#6da2f7")
+              : HexColor("#b3afb0")
           // gradient: const RadialGradient(
           //     center: Alignment.topRight,
           //     // near the top right
@@ -70,7 +72,7 @@ class _AudioMsgTileState extends State<AudioMsgTile> {
                     child: Text(
                       widget.map!["sendBy"],
                       style: TextStyle(
-                          color: Color.fromARGB(255, 84, 215, 184),
+                          color: Colors.black,
                           fontWeight: FontWeight.bold),
                     ),
                   ),

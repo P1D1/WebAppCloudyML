@@ -8,6 +8,7 @@ import 'package:cloudyml_app2/models/course_details.dart';
 import 'package:cloudyml_app2/module/video_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
@@ -99,6 +100,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  static final FlutterLocalNotificationsPlugin
+  _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   @override
   void initState() {
     super.initState();
@@ -108,8 +111,10 @@ class _HomeScreenState extends State<HomeScreen> {
     // dbCheckerForDaysLeftForLimitedAccess();
   }
 
+
   @override
   Widget build(BuildContext context) {
+
     List<CourseDetails> course = Provider.of<List<CourseDetails>>(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;

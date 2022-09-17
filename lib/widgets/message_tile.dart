@@ -1,10 +1,35 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:hexcolor/hexcolor.dart';
 
 String lastCurrentTag = '';
 
 Widget MessageTile(size, map, displayName, currentTag) {
+
+  var list = [];
+  var link = "";
+  print(map["message"]);
+  if(map["message"].contains("https"))
+    {
+      for(int i=0;i<map["message"].length;i++)
+      {
+        if(map["message"][i]!=" ")
+        {
+          link+=map["message"][i];
+          if(i==map["message"].length-1)
+          {
+            list.add(link);
+          }
+        }
+        else{
+          list.add(link);
+          link = "";
+        }
+      }
+    }
   // String taggedNameText = '';
   // String untaggedText = '';
   // if (currentTag.toString().contains('@')) {
@@ -55,8 +80,8 @@ Widget MessageTile(size, map, displayName, currentTag) {
         //       Colors.blue,
         //     ]),
         color: map!["sendBy"] == displayName
-            ? Color(0xFF7860DC)
-            : Color.fromARGB(255, 142, 141, 141),
+            ? HexColor("#6da2f7")
+            : HexColor("#b3afb0"),
       ),
       constraints: BoxConstraints(
         maxWidth: size.width * 0.7,
@@ -69,7 +94,7 @@ Widget MessageTile(size, map, displayName, currentTag) {
             child: Text(
               (map['sendBy']),
               style: TextStyle(
-                color: Color.fromARGB(255, 43, 184, 139),
+                color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.start,
@@ -81,33 +106,54 @@ Widget MessageTile(size, map, displayName, currentTag) {
           Align(
             alignment: Alignment.topLeft,
             child:
-                // RichText(
-                //   text: TextSpan(children: [
-                //     TextSpan(
-                //       text: taggedNameText,
-                //       style: TextStyle(
-                //         color: Color.fromARGB(255, 80, 165, 207),
-                //         fontWeight: FontWeight.bold,
-                //         fontSize: 18,
-                //       ),
-                //     ),
-                //     TextSpan(
-                //       text: untaggedText,
-                //       style: TextStyle(
-                //         color: Colors.white,
-                //         fontSize: 18,
-                //       ),
-                //     ),
-                //   ]),
-                // ),
-                SelectableText(
-              map['message'],
-              textWidthBasis: TextWidthBasis.parent,
-              style: GoogleFonts.archivo(
-                color: Colors.white,
-                fontSize: 15,
-              ),
+            RichText(
+              text: map["message"].contains("https")?
+              TextSpan(children: List.generate(list.length, (index) {
+                return TextSpan(
+                  text: list[index]+" ",
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () async{
+                      if(list[index].contains("https"))
+                        {
+                          if (await canLaunch(list[index])) {
+                            await launch(list[index]);
+                          } else {
+                            throw 'Could not launch ${list[index]}';
+                          }
+                        }
+                    },
+                  style: TextStyle(
+                    decoration: list[index].contains("https")?TextDecoration.underline:null,
+                    color: list[index].contains("https")?HexColor("#0509f7"):Colors.white,
+                    // fontWeight: FontWeight.bold,
+                    fontSize: 18,
+
+                  ),
+                );
+              })
+              ):TextSpan(
+                children: [
+              TextSpan(
+              text: map["message"],
+                  style: TextStyle(
+                    // decoration: list[index].contains("https")?TextDecoration.underline:null,
+                    color: Colors.white,
+                    // fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  )),
+                ]
+              )
+
             ),
+
+            // SelectableText(
+            //   map['message'],
+            //   textWidthBasis: TextWidthBasis.parent,
+            //   style: GoogleFonts.archivo(
+            //     color: Colors.white,
+            //     fontSize: 15,
+            //   ),
+            // ),
           ),
           SizedBox(
             height: 2,
@@ -117,8 +163,8 @@ Widget MessageTile(size, map, displayName, currentTag) {
             child: Text(
               DateFormat('hh:mm a')
                   .format(map!["time"] != null
-                      ? map!["time"].toDate()
-                      : DateTime.now())
+                  ? map!["time"].toDate()
+                  : DateTime.now())
                   .toLowerCase(),
               style: TextStyle(
                   fontSize: 12,

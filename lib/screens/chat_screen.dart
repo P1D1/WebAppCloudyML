@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:cloudyml_app2/Providers/chat_screen_provider.dart';
 import 'package:cloudyml_app2/fun.dart';
 import 'package:cloudyml_app2/screens/group_info.dart';
 import 'package:cloudyml_app2/screens/groups_list.dart';
@@ -16,14 +18,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:hive/hive.dart';
 import "package:image_picker/image_picker.dart";
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:record/record.dart';
 import 'package:badges/badges.dart';
 import 'package:lottie/lottie.dart';
+import '../StreamController/StreamControllers.dart';
 import '../widgets/assignment_bottomsheet.dart';
 import '../Services/local_notificationservice.dart';
 import 'package:http/http.dart' as http;
@@ -32,6 +37,8 @@ import 'package:cloudyml_app2/screens/groups_list.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
 
 class ChatScreen extends StatefulWidget {
 
@@ -53,6 +60,8 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
 //....................VARIABLES.................................
+
+  DocumentSnapshot<Map<String, dynamic>>? _lastDocument;
   TextEditingController _message = TextEditingController();
 
   FirebaseAuth _auth = FirebaseAuth.instance;
@@ -76,7 +85,7 @@ class _ChatScreenState extends State<ChatScreen> {
   List<List<DocumentSnapshot>> _allPagedResults = [<DocumentSnapshot>[]];
 
   static const int chatLimit = 10;
-  DocumentSnapshot? _lastDocument;
+
   bool _hasMoreData = true;
 
   Stream<List<DocumentSnapshot>> listenToChatsRealTime() {
@@ -84,7 +93,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return _chatController.stream;
   }
 
-  bool textFocusCheck = false;
+  // bool textFocusCheck = false;
 
   Record record = Record();
   bool isRecording = false;
@@ -102,9 +111,9 @@ class _ChatScreenState extends State<ChatScreen> {
   ///Group members for UI of list of tags
   Future<void> addTagProperties() async {
     //Take list User id of all mentors
-    List tagUserId = widget.groupData['data']['mentors'];
+    List tagUserId = widget.groupData['mentors'];
     //Take user id of student
-    tagUserId.add(widget.groupData['data']['student_id']);
+    tagUserId.add(widget.groupData['student_id']);
     //Loop over list of member ids in tagUserId to fetch Name and Image of Respective member
     for (var member in tagUserId) {
       await FirebaseFirestore.instance
@@ -195,7 +204,7 @@ class _ChatScreenState extends State<ChatScreen> {
     count = 0;
     var pageChatQuery = _firestore
         .collection("groups")
-        .doc(widget.groupData!["id"])
+        .doc(widget.groupData!.id)
         .collection("chats")
         .orderBy("time", descending: true)
         .limit(chatLimit);
@@ -240,11 +249,12 @@ class _ChatScreenState extends State<ChatScreen> {
     //to get the image from galary
     ImagePicker _picker = ImagePicker();
 
-    await _picker.pickImage(source: ImageSource.camera).then((xFile) {
+    await _picker.pickImage(source: ImageSource.camera).then((xFile)async {
       if (xFile != null) {
         pickedFile = File(xFile.path);
         pickedFileName = xFile.name.toString();
         uploadFile("image");
+        await sendNotification(pickedFileName,widget.userData["name"]);
       }
     });
   }
@@ -257,6 +267,8 @@ class _ChatScreenState extends State<ChatScreen> {
       pickedFile = a;
       pickedFileName = result.names[0].toString();
       uploadFile("file");
+      await sendNotification(pickedFileName,widget.userData["name"]);
+
     }
   }
 
@@ -265,7 +277,7 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       var sentData = await _firestore
           .collection("groups")
-          .doc(widget.groupData!["id"])
+          .doc(widget.groupData!.id)
           .collection("chats")
           .add({
         "link": "",
@@ -295,7 +307,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
       String fileUrl = await uploadTask.ref.getDownloadURL();
 
-      await sentData.update({"link": fileUrl});
+      await sentData.update({"link": fileUrl,});
+
     } catch (e) {
       Fluttertoast.showToast(msg: e.toString());
     }
@@ -304,10 +317,12 @@ class _ChatScreenState extends State<ChatScreen> {
   //storing message to firestore database
   void onSendMessage() async {
 
+    var messages = _message.text;
+    _message.clear();
     //to send the text to server
-    if (_message.text.isNotEmpty) {
+    if (messages.isNotEmpty) {
       Map<String, dynamic> message = {
-        "message": _message.text,
+        "message": messages,
         "sendBy": widget.userData["name"],
         "type": "text",
         "time": FieldValue.serverTimestamp(),
@@ -316,23 +331,26 @@ class _ChatScreenState extends State<ChatScreen> {
 
       await _firestore
           .collection("groups")
-          .doc(widget.groupData!["id"])
+          .doc(widget.groupData!.id)
           .collection("chats")
           .add(message);
-
+      print("GroupId = ${widget.groupId}");
+  await _firestore.collection("groups").doc(widget.groupId).update(
+    {"time":FieldValue.serverTimestamp()}
+  );
       print('count is-------$count');
-     var messages = _message.text;
-      _message.clear();
-      setState(() {
-        textFocusCheck = false;
-      });
+
+      // await stream();
+      // setState(() {
+      //   textFocusCheck = false;
+      // });
+
       await sendNotification(messages,widget.userData["name"]);
-
-
     }
   }
 
   void startRecording() async {
+    print("REcording....");
     if (await Record().hasPermission()) {
       isRecording = true;
       await record.start(
@@ -429,13 +447,25 @@ class _ChatScreenState extends State<ChatScreen> {
   //   });
   // }
 
+  static final FlutterLocalNotificationsPlugin
+  _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  final myBox = Hive.box('myBox');
   @override
   void initState() {
     // TODO: implement initState
     // _message.addListener();
 
+    // final InitializationSettings initializationSettings =
+    // InitializationSettings(
+    //     android: AndroidInitializationSettings("@mipmap/ic_launcher"));
+    // _flutterLocalNotificationsPlugin.initialize(initializationSettings,onSelectNotification: (payload)async{
+    //   print("Hello notify");
+    //   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>GroupsList()));
+    // });
 
-
+    print("GroupData = ${widget.groupData["student_id"]}");
+    print("USerData =  ${widget.userData["id"]}");
     getStoragePath();
     _scrollController.addListener(() {
       if (_scrollController.offset >=
@@ -454,37 +484,115 @@ class _ChatScreenState extends State<ChatScreen> {
     // });
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async{
       print("MEssage");
-      LocalNotificationService.createanddisplaynotification(message);
+      print(widget.groupData!["name"]);
+      var data = await LocalNotificationService.display(message,widget.groupData!["name"]);
+      print(data);
+      await myBox.put(data["ID"], data);
+      // await stream();
+
+    print("Message removed");
     });
+
+
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print("Navigation");
       if(message.notification!.body!=null)
         {
           print("Navigation");
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => GroupsList()));
+          Navigator.pop(context);
         }
     });
+
+    removeNotification();
+
     super.initState();
   }
 
-  
+   List? groupsList;
+
+  static const int documentLimit = 30;
+  // _getGroupDetails() async {
+  //
+  //   QuerySnapshot<Map<String, dynamic>> querySnapshot =
+  //   widget.userData!['role'] == 'student'
+  //       ? await _firestore
+  //       .collection("groups")
+  //       .where("student_id", isEqualTo: _auth.currentUser!.uid)
+  //   // .orderBy('sr', descending: true)
+  //       .limit(documentLimit)
+  //       .get()
+  //       .then((value) => value)
+  //       : await _firestore
+  //       .collection("groups")
+  //   // .where("mentors", arrayContains: _auth.currentUser!.uid)
+  //       .orderBy('time', descending: true)
+  //       .limit(documentLimit)
+  //       .get()
+  //       .then((value) => value);
+  //   groupsList = querySnapshot.docs
+  //       .map((doc) => {
+  //     "id": doc.id,
+  //     "data": doc.data(),
+  //   })
+  //       .toList();
+  //   // getchatcount(querySnapshot.docs
+  //   //     .map((doc) => {
+  //   //           "id": doc.id,
+  //   //           "data": doc.data(),
+  //   //         })
+  //   //     .toList());
+  //   _lastDocument = querySnapshot.docs.last;
+  //
+  // }
+
+  Map? userData = {};
+
+
+
+  removeNotification()
+  async{
+
+
+    var data = await myBox.values;
+    print(data);
+    if(widget.groupData["student_id"]==widget.userData["id"])
+      {
+        for(var i in data)
+        {
+          if(i["CourseName"]==widget.groupData!["name"])
+          {
+            await _flutterLocalNotificationsPlugin.cancel(i["ID"]);
+            await myBox.delete(i["ID"]);
+          }
+        }
+      }
+    else{
+      for(var i in data)
+      {
+        if(i["student_id"]==widget.userData["id"])
+        {
+          await _flutterLocalNotificationsPlugin.cancel(i["ID"]);
+          await myBox.delete(i["ID"]);
+        }
+      }
+    }
+    print(myBox.values);
+  }
 
   sendNotification(message,senderId)
   async{
     var Id = await _firestore
         .collection('groups')
         .doc(
-        widget.groupData!["id"]
+        widget.groupData!.id
     );
     var responseData;
     final response = await Id.get().then((DocumentSnapshot doc){
       responseData = doc.data() as Map<String,dynamic>;
     });
     print(response);
-    var list = [];
     var listInstance = [];
-
+    var list = [];
     for(int i=0;i<responseData["mentors"].length;i++)
       {
         var res = FirebaseFirestore.instance.collection("Users").doc(responseData["mentors"][i]).get();
@@ -572,7 +680,7 @@ class _ChatScreenState extends State<ChatScreen> {
     print("length = ${listOfTokenId.length}");
     if(listOfTokenId.length>0)
       {
-        print(widget.groupData!["data"]["name"]);
+        print(widget.groupData!["name"]);
         int j=0;
         while(j<listOfTokenId.length)
           {
@@ -594,12 +702,12 @@ class _ChatScreenState extends State<ChatScreen> {
               http.StreamedResponse response = await request.send();
 
               if (response.statusCode == 200) {
-                sleep(Duration(seconds: 1));
+                sleep(Duration(milliseconds: 100));
                 j++;
                 print(await response.stream.bytesToString());
               }
               else {
-                sleep(Duration(seconds: 1));
+                sleep(Duration(milliseconds: 100));
                 j++;
                 print(response.reasonPhrase);
               }
@@ -650,14 +758,22 @@ class _ChatScreenState extends State<ChatScreen> {
   //   }
   // }
 
+  int numberOfLines = 0;
+
   @override
   Widget build(BuildContext context) {
+    final providerChatScreenNotifier = Provider.of<ChatScreenNotifier>(context,listen: false);
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
     final size = MediaQuery.of(context).size;
     print("user name is ${widget.userData}");
-    print("USer = ${widget.groupData}");
-    return Scaffold(
+    print("USer = ${widget.groupData.id}");
+    return WillPopScope( onWillPop: ()async{
+      Navigator.of(context).pop();
+      return false;
+
+    },
+    child: Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         titleSpacing: 0,
@@ -679,6 +795,7 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               GestureDetector(
                   onTap: () {
+
                     Navigator.pop(context);
                   },
                   child: Container(
@@ -688,7 +805,7 @@ class _ChatScreenState extends State<ChatScreen> {
               CircleAvatar(
                 radius: 22,
                 backgroundImage:
-                    NetworkImage(widget.groupData!["data"]["icon"]),
+                NetworkImage(widget.groupData!["icon"]),
               ),
               Container(
                 padding: const EdgeInsets.all(10),
@@ -702,7 +819,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         Container(
                           width: width * 0.52,
                           child: Text(
-                            widget.groupData!["data"]["name"],
+                            widget.groupData!["name"],
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
@@ -747,183 +864,197 @@ class _ChatScreenState extends State<ChatScreen> {
       body: appStorage == null
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              reverse: true,
-              child: Column(
-                children: [
-                  //Chats container
-                  Container(
-                    height: size.height / 1.33,
-                    width: size.width,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: AssetImage('assets/g8.png'),
-                          opacity: 0.16,
-                          fit: BoxFit.cover),
-                    ),
-                    child: StreamBuilder<List<DocumentSnapshot>>(
-                      stream: listenToChatsRealTime(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                                ConnectionState.waiting ||
-                            snapshot.connectionState == ConnectionState.none) {
-                          return snapshot.hasData
-                              ? const Center(
-                                  child: CircularProgressIndicator(),
-                                )
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                        padding:
-                                            EdgeInsets.fromLTRB(5, 5, 5, 5),
-                                        decoration: BoxDecoration(
-                                          color: Colors.transparent,
+        reverse: true,
+        child: Column(
+          children: [
+            //Chats container
+            Container(
+              height: size.height / 1.33,
+              width: size.width,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('assets/g8.png'),
+                    opacity: 0.16,
+                    fit: BoxFit.cover),
+              ),
+              child: StreamBuilder<List<DocumentSnapshot>>(
+                stream: listenToChatsRealTime(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState ==
+                      ConnectionState.waiting ||
+                      snapshot.connectionState == ConnectionState.none) {
+                    return snapshot.hasData
+                        ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                        : Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                            padding:
+                            EdgeInsets.fromLTRB(5, 5, 5, 5),
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
 
-                                          //DecorationImage
-                                          // border: Border.all(
-                                          //   // color: Colors.green,
-                                          //   width: 8,
-                                          // ), //Border.all
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey,
-                                              offset: const Offset(
-                                                1.0,
-                                                1.0,
-                                              ), //Offset
-                                              blurRadius: 2.0,
-                                              spreadRadius: 2.0,
-                                            ), //BoxShadow
-                                            BoxShadow(
-                                              color: Color.fromARGB(
-                                                  255, 255, 255, 255),
-                                              offset: const Offset(0.0, 0.0),
-                                              blurRadius: 0.0,
-                                              spreadRadius: 0.0,
-                                            ), //BoxShadow
-                                          ],
-                                        ),
-                                        margin:
-                                            EdgeInsets.fromLTRB(25, 0, 25, 0),
-                                        child: chat()
-                                        //  Text(
-                                        // 'You can ask assignment related doubts here 6pm- midnight.(Indian standard time)\nour mentors:-\n6:00pm-7:30pm - Rahul\n7:30pm-midnight - Harsh'),
-                                        )
-                                    // Center(
-                                    //     child: Text("Start a Conversation."),
-                                    //   ),
-                                  ],
-                                );
-                        } else {
-                          if (snapshot.data != null) {
-                            return Stack(
-                              children: [
-                                ListView.builder(
-                                  reverse: true,
-                                  controller: _scrollController,
-                                  itemCount: snapshot.data!.length,
-                                  itemBuilder: (context, index) {
-                                    Map<String, dynamic> map =
-                                        // messageData =
-                                        snapshot.data![index].data()
-                                            as Map<String, dynamic>;
-
-                                    return messages(
-                                      size,
-                                      map,
-                                      context,
-                                      appStorage,
-                                      currentTag,
-                                    );
-                                  },
-                                ),
-                                shouldShowTags
-                                    ? Positioned(
-                                        bottom: 0,
-                                        child: FutureBuilder(
-                                          future: addTagProperties(),
-                                          builder: ((context, snapshot) {
-                                            if (ConnectionState.done ==
-                                                snapshot.connectionState) {
-                                              return buildTags(
-                                                context,
-                                                height,
-                                                width,
-                                              );
-                                            } else {
-                                              return Container(
-                                                height: height * 0.25,
-                                                width: width * 0.8,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                    topLeft:
-                                                        Radius.circular(20),
-                                                    topRight:
-                                                        Radius.circular(20),
-                                                  ),
-                                                  border: Border.all(
-                                                    color: Colors.grey,
-                                                    width: 0.1,
-                                                  ),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(20),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            20),
-                                                    child: Lottie.asset(
-                                                        'assets/load-shimmer.json',
-                                                        fit: BoxFit.fill),
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                          }),
-                                        ),
-                                      )
-                                    : Container(),
-                                // Positioned(
-                                //   bottom: 0,
-                                //   left: 0,
-                                //   right: 0,
-                                //   child: selectTags(context),
-                                // )
+                              //DecorationImage
+                              // border: Border.all(
+                              //   // color: Colors.green,
+                              //   width: 8,
+                              // ), //Border.all
+                              borderRadius:
+                              BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: const Offset(
+                                    1.0,
+                                    1.0,
+                                  ), //Offset
+                                  blurRadius: 2.0,
+                                  spreadRadius: 2.0,
+                                ), //BoxShadow
+                                BoxShadow(
+                                  color: Color.fromARGB(
+                                      255, 255, 255, 255),
+                                  offset: const Offset(0.0, 0.0),
+                                  blurRadius: 0.0,
+                                  spreadRadius: 0.0,
+                                ), //BoxShadow
                               ],
-                            );
-                          } else {
-                            return Container();
-                          }
-                        }
-                      },
-                    ),
-                  ),
-                  //Message Text Field container
-                  // Container(
-                  //   margin: EdgeInsets.fromLTRB(0, 7, 0, 0),
-                  //   height: size.height *.098,
-                  //   width: size.width * 1.2,
-                  //   alignment: Alignment.bottomCenter,
-                    // child:
-                     Container(
-                      alignment: Alignment.bottomCenter,
-                      height: size.height *.1,
-                      width: size.width /1.1,
-                      child: 
-                      Row(
+                            ),
+                            margin:
+                            EdgeInsets.fromLTRB(25, 0, 25, 0),
+                            child: chat()
+                          //  Text(
+                          // 'You can ask assignment related doubts here 6pm- midnight.(Indian standard time)\nour mentors:-\n6:00pm-7:30pm - Rahul\n7:30pm-midnight - Harsh'),
+                        )
+                        // Center(
+                        //     child: Text("Start a Conversation."),
+                        //   ),
+                      ],
+                    );
+                  } else {
+                    if (snapshot.data != null) {
+
+                      print("MessageDataa = = ${snapshot.data}");
+
+                      return Stack(
                         children: [
+                          ListView.builder(
+                            reverse: true,
+                            controller: _scrollController,
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, index) {
+
+                              print("currentTag = ${currentTag.toString()}");
+                              Map<String, dynamic> map =
+                              // messageData =
+                              snapshot.data![index].data()
+                              as Map<String, dynamic>;
+
+                              return messages(
+                                size,
+                                map,
+                                context,
+                                appStorage,
+                                currentTag,
+                              );
+                            },
+                          ),
+                          shouldShowTags
+                              ? Positioned(
+                            bottom: 0,
+                            child: FutureBuilder(
+                              future: addTagProperties(),
+                              builder: ((context, snapshot) {
+                                if (ConnectionState.done ==
+                                    snapshot.connectionState) {
+                                  return buildTags(
+                                    context,
+                                    height,
+                                    width,
+                                  );
+                                } else {
+                                  return Container(
+                                    height: height * 0.25,
+                                    width: width * 0.8,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius:
+                                      BorderRadius.only(
+                                        topLeft:
+                                        Radius.circular(20),
+                                        topRight:
+                                        Radius.circular(20),
+                                      ),
+                                      border: Border.all(
+                                        color: Colors.grey,
+                                        width: 0.1,
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding:
+                                      const EdgeInsets.all(20),
+                                      child: ClipRRect(
+                                        borderRadius:
+                                        BorderRadius.circular(
+                                            20),
+                                        child: Lottie.asset(
+                                            'assets/load-shimmer.json',
+                                            fit: BoxFit.fill),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }),
+                            ),
+                          )
+                              : Container(),
+                          // Positioned(
+                          //   bottom: 0,
+                          //   left: 0,
+                          //   right: 0,
+                          //   child: selectTags(context),
+                          // )
+                        ],
+                      );
+                    } else {
+                      return Container();
+                    }
+                  }
+                },
+              ),
+            ),
+            //Message Text Field container
+            // Container(
+            //   margin: EdgeInsets.fromLTRB(0, 7, 0, 0),
+            //   height: size.height *.098,
+            //   width: size.width * 1.2,
+            //   alignment: Alignment.bottomCenter,
+            // child:
+            Consumer<ChatScreenNotifier>(
+              builder: (context,data,child){
+                return Container(
+                  alignment: Alignment.bottomCenter,
+                  height: data.text.length>=19?data.text.length>=20?
+                  data.text.length>=36?
+                  data.text.length>49?
+                  data.text.length>=78?size.height * ((78/42)/10):
+                  size.height * ((53/32)/10):size.height*(((36)/28)/10):
+                  size.height*(((20)/20)/10):size.height * ((data.text.length)/20)/10:size.height* .1,
+                  width: size.width /1.1,
+                  child:
+                  Row(
+                    // mainAxisAlignment: MainAxisAlignment.center,
+                    //   crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Container(
                           margin:EdgeInsets.fromLTRB(0, 8, 0, 0),
-                          height: height *.09 ,
+                          height: height *.3,
                           width: size.width / 1.33,
                           child: TextField(
-                            style: TextStyle(fontSize: 11),
+                            style: TextStyle(fontSize: 16),
                             // style: TextStyle(
                             //   color: _message.text.startsWith('@')
                             //       // &&
@@ -932,30 +1063,30 @@ class _ChatScreenState extends State<ChatScreen> {
                             //       : Colors.black,
                             // ),
                             onChanged: (text) {
-                              setState(() {
-                                if (text.contains('@')) {
-                                  shouldShowTags = true;
-                                } else {
-                                  shouldShowTags = false;
-                                }
-                                if (text.isNotEmpty) {
-                                  textFocusCheck = true;
-                                } else {
-                                  textFocusCheck = false;
-                                }
-                              });
+                              providerChatScreenNotifier.sendTextMessage(text);
+                              // setState(() {
+                              //   if (text.contains('@')) {
+                              //     shouldShowTags = true;
+                              //   } else {
+                              //     shouldShowTags = false;
+                              //   }
+                              //   if (text.isNotEmpty) {
+                              //     textFocusCheck = true;
+                              //   } else {
+                              //     textFocusCheck = false;
+                              //   }
+                              // });
                             },
                             // keyboardType: TextInputType.multiline,
                             maxLines: null,
                             controller: _message,
                             autocorrect: true,
                             cursorColor: Colors.purple,
-                            
+                            textInputAction: TextInputAction.newline,
                             decoration: InputDecoration(
                               contentPadding: EdgeInsets.fromLTRB(10, 4, 0, 5),
                               // all(4),
                               suffixIcon: Container(
-                                
                                 width: width * 0.23,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
@@ -980,7 +1111,6 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                               fillColor: const Color.fromARGB(255, 119, 5, 181),
                               focusedBorder: OutlineInputBorder(
-                               
                                 borderSide: const BorderSide(
                                     color: Color.fromARGB(255, 35, 6, 194),
                                     width: 2.0),
@@ -988,8 +1118,8 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                               hintText: "Ask Your Doubt...",
                               hintStyle: TextStyle(
-                                
-                                  fontSize: 13.0,
+
+                                  fontSize: 15.0,
                                   color: Color.fromARGB(255, 183, 183, 183)),
                               border: OutlineInputBorder(
                                 gapPadding: 0.0,
@@ -1006,7 +1136,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         Container(
                           margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
                           child: Ink(
-                            
+
                             decoration: ShapeDecoration(
                               color: Color(0xFF7860DC),
                               shape: RoundedRectangleBorder(
@@ -1016,34 +1146,66 @@ class _ChatScreenState extends State<ChatScreen> {
                               focusColor: Colors.blue,
                               splashRadius: 30,
                               splashColor: Colors.blueGrey,
-                              onPressed: () async {
-                                textFocusCheck
+                              onPressed: () {
+                                providerChatScreenNotifier.sendTextMessage("");
+                                _message.text!=""
                                     ? onSendMessage()
                                     : onSendAudioMessage();
                                 //To bring latest msg on top
-                                await _firestore
-                                    .collection('groups')
-                                    .doc(widget.groupData!["id"])
-                                    .update({'time': DateTime.now()});
+                                // await _firestore
+                                //     .collection('groups')
+                                //     .doc(widget.groupData!.id)
+                                //     .update({'time': DateTime.now()});
                               },
-                              icon: textFocusCheck
-                                  ? const Icon(Icons.send)
-                                  : const Icon(Icons.mic),
+                              icon: Consumer<ChatScreenNotifier>(
+                                builder: (context,child,value){
+                                  print(child.text);
+                                  return child.text==""
+                                      ? const Icon(Icons.mic)
+                                      : const Icon(Icons.send);
+                                },
+                              ),
                               color: Colors.white,
                             ),
                           ),
                         ),
                       ]),
-                    ),
-                  // ),
-                ],
-              ),
-            ),
-    );
+                );
+              },
+            )
+            // ),
+          ],
+        ),
+      ),
+    ),);
   }
 
   Widget messages(Size size, Map<String, dynamic> map, BuildContext context,
       Directory? appStorage, String currentTag) {
+
+
+    // var list = [];
+    // print("Detector---------------------${map["message"][0]}");
+    // var link = "";
+    // for(int i=0;i<map["message"].length-4;i++)
+    // {
+    //   if(map["message"][i]=='h' && map["message"][i+1]=='t' && map["message"][i+2]=='t' && map["message"][i+3]=='p')
+    //   {
+    //     link!=""?list.add(link):null;
+    //     link = "";
+    //     for(int j=i;map["message"][j]!=" " && j<map["message"].length-1;j++) {
+    //       link += map["message"][j];
+    //     }
+    //     list.add(link);
+    //     link = "";
+    //     continue;
+    //   }
+    //   link+=map["message"][i];
+    // }
+    // print("Link----$list");
+
+
+
     //help us to show the text and the image in perfect alignment
     return map['type'] == "text" //checks if our msg is text or image
         ? MessageTile(size, map, widget.userData["name"], currentTag)
