@@ -1036,140 +1036,137 @@ class _ChatScreenState extends State<ChatScreen> {
             Consumer<ChatScreenNotifier>(
               builder: (context,data,child){
                 return Container(
+
                   alignment: Alignment.bottomCenter,
-                  height: data.text.length>=19?data.text.length>=20?
-                  data.text.length>=36?
-                  data.text.length>49?
-                  data.text.length>=78?size.height * ((78/42)/10):
-                  size.height * ((53/32)/10):size.height*(((36)/28)/10):
-                  size.height*(((20)/20)/10):size.height * ((data.text.length)/20)/10:size.height* .1,
+                  // height: // size.height* .1,
                   width: size.width /1.1,
                   child:
-                  Row(
-                    // mainAxisAlignment: MainAxisAlignment.center,
-                    //   crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          margin:EdgeInsets.fromLTRB(0, 8, 0, 0),
-                          height: height *.3,
-                          width: size.width / 1.33,
-                          child: TextField(
-                            style: TextStyle(fontSize: 16),
-                            // style: TextStyle(
-                            //   color: _message.text.startsWith('@')
-                            //       // &&
-                            //       //         _message.text.endsWith('other')
-                            //       ? Colors.green
-                            //       : Colors.black,
-                            // ),
-                            onChanged: (text) {
-                              providerChatScreenNotifier.sendTextMessage(text);
-                              // setState(() {
-                              //   if (text.contains('@')) {
-                              //     shouldShowTags = true;
-                              //   } else {
-                              //     shouldShowTags = false;
-                              //   }
-                              //   if (text.isNotEmpty) {
-                              //     textFocusCheck = true;
-                              //   } else {
-                              //     textFocusCheck = false;
-                              //   }
-                              // });
-                            },
-                            // keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            controller: _message,
-                            autocorrect: true,
-                            cursorColor: Colors.purple,
-                            textInputAction: TextInputAction.newline,
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.fromLTRB(10, 4, 0, 5),
-                              // all(4),
-                              suffixIcon: Container(
-                                width: width * 0.23,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    SizedBox(
-                                      width: 27,
-                                      child: IconButton(
-                                        onPressed: () => getFile(),
-                                        icon: const Icon(
-                                          Icons.attach_file,
+                    Row(
+                        children: [
+                          Container(
+                            margin:EdgeInsets.fromLTRB(0, 8, 0, 13),
+                            // height: height *.3,
+                            width: size.width / 1.33,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(maxHeight: 120),
+                              child: TextField(
+                                style: TextStyle(fontSize: 16),
+                                // style: TextStyle(
+                                //   color: _message.text.startsWith('@')
+                                //       // &&
+                                //       //         _message.text.endsWith('other')
+                                //       ? Colors.green
+                                //       : Colors.black,
+                                // ),
+                                onChanged: (text) {
+                                  providerChatScreenNotifier.sendTextMessage(text);
+                                  // setState(() {
+                                  //   if (text.contains('@')) {
+                                  //     shouldShowTags = true;
+                                  //   } else {
+                                  //     shouldShowTags = false;
+                                  //   }
+                                  //   if (text.isNotEmpty) {
+                                  //     textFocusCheck = true;
+                                  //   } else {
+                                  //     textFocusCheck = false;
+                                  //   }
+                                  // });
+                                },
+                                // keyboardType: TextInputType.multiline,
+                                maxLines: null,
+                                controller: _message,
+                                autocorrect: true,
+                                cursorColor: Colors.purple,
+                                textInputAction: TextInputAction.newline,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.fromLTRB(10, 4, 0, 5),
+                                  // all(4),
+                                  suffixIcon: Container(
+                                    width: width * 0.23,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        SizedBox(
+                                          width: 27,
+                                          child: IconButton(
+                                            onPressed: () => getFile(),
+                                            icon: const Icon(
+                                              Icons.attach_file,
+                                              color: Color(0xFF7860DC),
+                                            ),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.photo),
+                                          onPressed: () => getImage(),
                                           color: Color(0xFF7860DC),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                    IconButton(
-                                      icon: const Icon(Icons.photo),
-                                      onPressed: () => getImage(),
-                                      color: Color(0xFF7860DC),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              fillColor: const Color.fromARGB(255, 119, 5, 181),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                    color: Color.fromARGB(255, 35, 6, 194),
-                                    width: 2.0),
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              hintText: "Ask Your Doubt...",
-                              hintStyle: TextStyle(
+                                  ),
+                                  fillColor: const Color.fromARGB(255, 119, 5, 181),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                        color: Color.fromARGB(255, 35, 6, 194),
+                                        width: 2.0),
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  hintText: "Ask Your Doubt...",
+                                  hintStyle: TextStyle(
 
-                                  fontSize: 15.0,
-                                  color: Color.fromARGB(255, 183, 183, 183)),
-                              border: OutlineInputBorder(
-                                gapPadding: 0.0,
-                                borderRadius: BorderRadius.circular(
-                                  (5),
+                                      fontSize: 15.0,
+                                      color: Color.fromARGB(255, 183, 183, 183)),
+                                  border: OutlineInputBorder(
+                                    gapPadding: 0.0,
+                                    borderRadius: BorderRadius.circular(
+                                      (5),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(
-                          width: 8,
-                        ),
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                          child: Ink(
-
-                            decoration: ShapeDecoration(
-                              color: Color(0xFF7860DC),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                            ),
-                            child: IconButton(
-                              focusColor: Colors.blue,
-                              splashRadius: 30,
-                              splashColor: Colors.blueGrey,
-                              onPressed: () {
-                                providerChatScreenNotifier.sendTextMessage("");
-                                _message.text!=""
-                                    ? onSendMessage()
-                                    : onSendAudioMessage();
-                                //To bring latest msg on top
-                                // await _firestore
-                                //     .collection('groups')
-                                //     .doc(widget.groupData!.id)
-                                //     .update({'time': DateTime.now()});
-                              },
-                              icon: Consumer<ChatScreenNotifier>(
-                                builder: (context,child,value){
-                                  print(child.text);
-                                  return child.text==""
-                                      ? const Icon(Icons.mic)
-                                      : const Icon(Icons.send);
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0, 8, 0, 13),
+                            child: Ink(
+                              decoration: ShapeDecoration(
+                                color: Color(0xFF7860DC),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                              ),
+                              child: IconButton(
+                                focusColor: Colors.blue,
+                                splashRadius: 30,
+                                splashColor: Colors.blueGrey,
+                                onPressed: () {
+                                  providerChatScreenNotifier.sendTextMessage("");
+                                  _message.text!=""
+                                      ? onSendMessage()
+                                      : onSendAudioMessage();
+                                  //To bring latest msg on top
+                                  // await _firestore
+                                  //     .collection('groups')
+                                  //     .doc(widget.groupData!.id)
+                                  //     .update({'time': DateTime.now()});
                                 },
+                                icon: Consumer<ChatScreenNotifier>(
+                                  builder: (context,child,value){
+                                    print(child.text);
+                                    return child.text==""
+                                        ? const Icon(Icons.mic)
+                                        : const Icon(Icons.send);
+                                  },
+                                ),
+                                color: Colors.white,
                               ),
-                              color: Colors.white,
                             ),
                           ),
-                        ),
-                      ]),
+                        ]),
+
                 );
               },
             )
