@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/fun.dart';
 import 'package:cloudyml_app2/screens/chat_screen.dart';
@@ -332,14 +333,14 @@ class _GroupsListState extends State<GroupsList> {
                       ),
                     ),
                     SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.1,
+                      width: MediaQuery.of(context).size.width * 0.08,
                     ),
                     Row(
                       children: [
                         Text(
                           'Chat',
                           style: TextStyle(
-                              fontSize: 25,
+                              fontSize: 23,
                               fontWeight: FontWeight.bold,
                               color: Colors.white),
                         ),
@@ -353,7 +354,7 @@ class _GroupsListState extends State<GroupsList> {
                           ? "Groups For You"
                           : "Groups For Mentors",
                       style: TextStyle(
-                        fontSize: 25,
+                        fontSize: 23,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -457,7 +458,7 @@ class _GroupsListState extends State<GroupsList> {
                                     },
                                     leading: CircleAvatar(
                                       radius: 22,
-                                      backgroundImage: NetworkImage(
+                                      backgroundImage: CachedNetworkImageProvider(
                                           snapshotGroupList.data!.docs[index]["icon"]),
                                     ),
                                     title: Text(

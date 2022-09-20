@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import "package:intl/intl.dart";
@@ -60,7 +61,7 @@ class _GroupTileState extends State<GroupTile> {
       child: ListTile(
         leading: CircleAvatar(
           radius: 22,
-          backgroundImage: NetworkImage(widget.groupData!["data"]["icon"]),
+          backgroundImage: CachedNetworkImageProvider(widget.groupData!["data"]["icon"]),
         ),
         title: Text(
           widget.groupData!["data"]["name"],

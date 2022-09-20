@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudyml_app2/Providers/chat_screen_provider.dart';
 import 'package:cloudyml_app2/fun.dart';
 import 'package:cloudyml_app2/screens/group_info.dart';
@@ -249,7 +250,7 @@ class _ChatScreenState extends State<ChatScreen> {
     //to get the image from galary
     ImagePicker _picker = ImagePicker();
 
-    await _picker.pickImage(source: ImageSource.camera).then((xFile)async {
+    await _picker.pickImage(source: ImageSource.camera,imageQuality: 60).then((xFile)async {
       if (xFile != null) {
         pickedFile = File(xFile.path);
         pickedFileName = xFile.name.toString();
@@ -805,7 +806,7 @@ class _ChatScreenState extends State<ChatScreen> {
               CircleAvatar(
                 radius: 22,
                 backgroundImage:
-                NetworkImage(widget.groupData!["icon"]),
+                CachedNetworkImageProvider(widget.groupData!["icon"]),
               ),
               Container(
                 padding: const EdgeInsets.all(10),

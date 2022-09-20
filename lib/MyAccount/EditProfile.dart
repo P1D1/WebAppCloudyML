@@ -110,7 +110,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         child: InkWell(
                           onTap: (){
                             final _picker=ImagePicker();
-                            _selectImagex(_picker.pickImage(source: ImageSource.gallery));
+                            _selectImagex(_picker.pickImage(source: ImageSource.gallery,imageQuality: 60));
                           },
                           child: SizedBox(
                             child: Container(

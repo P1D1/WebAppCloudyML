@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../helpers/file_handler.dart';
 import 'dart:io';
 import 'package:hexcolor/hexcolor.dart';
+
 class ImageMsgTile extends StatefulWidget {
   final Map<String, dynamic>? map;
   final String? displayName;
@@ -42,8 +44,8 @@ class _ImageMsgTileState extends State<ImageMsgTile> {
           : Alignment.centerLeft,
       child: InkWell(
         onTap: () {
-          print("Clicked--------")
-;          openFile(url: widget.map!["link"], fileName: widget.map!["message"]);
+          print("Clicked--------");
+          openFile(url: widget.map!["link"], fileName: widget.map!["message"]);
         },
         child: Container(
           width: size.width * 0.5,
@@ -72,8 +74,7 @@ class _ImageMsgTileState extends State<ImageMsgTile> {
                       child: Text(
                         widget.map!["sendBy"],
                         style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold),
+                            color: Colors.black, fontWeight: FontWeight.bold),
                       ),
                     ),
                     Container(
@@ -83,25 +84,29 @@ class _ImageMsgTileState extends State<ImageMsgTile> {
                               File(filePath),
                               fit: BoxFit.cover,
                             )
-                          : Image.network(
-                              widget.map!["link"],
+                          : CachedNetworkImage(
+                              placeholder: (context, url) =>
+                                  CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
+                              imageUrl: widget.map!["link"],
                               fit: BoxFit.cover,
-                              loadingBuilder: (BuildContext context,
-                                  Widget child,
-                                  ImageChunkEvent? loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    value: loadingProgress.expectedTotalBytes !=
-                                            null
-                                        ? loadingProgress
-                                                .cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                                  ),
-                                );
-                              },
+                              // loadingBuilder: (BuildContext context,
+                              //     Widget child,
+                              //     ImageChunkEvent? loadingProgress) {
+                              //   if (loadingProgress == null) return child;
+                              //   return Center(
+                              //     child: CircularProgressIndicator(
+                              //       color: Colors.white,
+                              //       value: loadingProgress.expectedTotalBytes !=
+                              //               null
+                              //           ? loadingProgress
+                              //                   .cumulativeBytesLoaded /
+                              //               loadingProgress.expectedTotalBytes!
+                              //           : null,
+                              //     ),
+                              //   );
+                              // },
                             ),
                     ),
                     Container(

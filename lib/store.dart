@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/catalogue_screen.dart';
 import 'package:cloudyml_app2/combo/combo_store.dart';
@@ -180,8 +181,14 @@ class _StoreScreenState extends State<StoreScreen> {
                                           child: ClipRRect(
                                             borderRadius:
                                                 BorderRadius.circular(15),
-                                            child: Image.network(
-                                              course[index].courseImageUrl,
+                                            child: CachedNetworkImage(
+                                              imageUrl:
+                                                  course[index].courseImageUrl,
+                                              placeholder: (context, url) =>
+                                                  CircularProgressIndicator(),
+                                              errorWidget:
+                                                  (context, url, error) =>
+                                                      Icon(Icons.error),
                                               fit: BoxFit.cover,
                                               height: MediaQuery.of(context)
                                                       .size

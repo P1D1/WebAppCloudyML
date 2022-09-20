@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudyml_app2/globals.dart';
 import 'package:cloudyml_app2/widgets/coupon_code.dart';
 import 'package:cloudyml_app2/widgets/payment_portal.dart';
@@ -110,8 +111,12 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                         Expanded(
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(15),
-                            child: Image.network(
-                              widget.map!['image_url'],
+                            child: CachedNetworkImage(
+                              imageUrl: widget.map!['image_url'],
+                              placeholder: (context, url) =>
+                                  CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
                               fit: BoxFit.fill,
                               height: 110 * verticalScale,
                               width: 127 * horizontalScale,

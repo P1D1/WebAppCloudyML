@@ -3,6 +3,9 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
+
+  final String TABLE_NAME = 'offline';
+
   Future<Database> database() async {
     return openDatabase(
       join(await getDatabasesPath(), 'offline.db'),
@@ -20,7 +23,7 @@ class DatabaseHelper {
     int taskId = 0;
     Database _db = await database();
     await _db
-        .insert('offline', video.toMap(),
+        .insert(TABLE_NAME, video.toMap(),
             conflictAlgorithm: ConflictAlgorithm.replace)
         .then((value) {
       taskId = value;
@@ -41,4 +44,11 @@ class DatabaseHelper {
       );
     });
   }
+
+  Future<int> deleteOfflineVideoData(int id) async{
+    Database _db = await database();
+    int isSuccess = await _db.delete(TABLE_NAME,where: 'id = (?)',whereArgs: [id]);
+    return isSuccess;
+  }
+
 }

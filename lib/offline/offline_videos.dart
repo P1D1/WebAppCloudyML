@@ -8,6 +8,7 @@ import 'package:cloudyml_app2/models/offline_model.dart';
 import 'package:chewie/chewie.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/offline/offline_videoscreen.dart';
+import 'package:cloudyml_app2/utils/utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:cloudyml_app2/home.dart';
@@ -32,37 +33,60 @@ class _OfflinePageState extends State<OfflinePage> {
   Future<void> getVideos() async {
     DatabaseHelper _dbhelper = DatabaseHelper();
     videos = await _dbhelper.getTasks();
+    await checkAndRemoveDeletedFiles(videos);
     setState(() {
       loading = false;
     });
+  }
+  Future<void> deleteVideosInFileSystem(String path) async {
+    int deletedFileRows = await Utils.deleteFile(path);
+    if(deletedFileRows == 0) {
+      //TODO: Handle error
+    }
+    return ;
+  }
+  Future<void> deleteVideosInDb(int id) async {
+    DatabaseHelper _dbhelper = DatabaseHelper();
+    int deletedDbRows = await _dbhelper.deleteOfflineVideoData(id);
+    if(deletedDbRows == 0) {
+      //TODO: Logs error handler
+      print("No data deleted");
+    }
+    return ;
   }
 
   void getData() async {
     //--/data/user/0/com.cloudyml.cloudymlapp/app_flutter/file.mp4
     //--/data/user/0/com.cloudyml.cloudymlapp/app_flutter/LogicalOperators.mp4
-    File videoFile = File(videos[0].path!);
 
-    try {
-      _videoController = VideoPlayerController.file(
-        videoFile,
-      )..initialize().then((value) {
-          _videoController!.setLooping(false);
-          _chewieController = ChewieController(
-            materialProgressColors: ChewieProgressColors(
-                playedColor: Color(0xFFaefb2a), handleColor: Color(0xFFaefb2a)),
-            cupertinoProgressColors: ChewieProgressColors(
-                playedColor: Color(0xFFaefb2a), handleColor: Color(0xFFaefb2a)),
-            videoPlayerController: _videoController!,
-            looping: false,
-          );
-          setState(() {
-            loading = false;
+    if(!videos.isEmpty) {
+      File videoFile = File(videos[0].path!);
+
+      try {
+        _videoController = VideoPlayerController.file(
+          videoFile,
+        )
+          ..initialize().then((value) {
+            _videoController!.setLooping(false);
+            _chewieController = ChewieController(
+              materialProgressColors: ChewieProgressColors(
+                  playedColor: Color(0xFFaefb2a),
+                  handleColor: Color(0xFFaefb2a)),
+              cupertinoProgressColors: ChewieProgressColors(
+                  playedColor: Color(0xFFaefb2a),
+                  handleColor: Color(0xFFaefb2a)),
+              videoPlayerController: _videoController!,
+              looping: false,
+            );
+            setState(() {
+              loading = false;
+            });
           });
+      } catch (e) {
+        setState(() {
+          loading = false;
         });
-    } catch (e) {
-      setState(() {
-        loading = false;
-      });
+      }
     }
   }
 
@@ -242,18 +266,17 @@ class _OfflinePageState extends State<OfflinePage> {
                       );
                     },
                     autofocus: true,
-                    // trailing: Card(
-                    //   color: Colors.transparent,
-                    //   child: IconButton(
-                    //     onPressed: () {
-                    //       // Utils.downloadPdf(
-                    //       //   context: context,
-                    //       //   pdfName: widget.curriculum['Company Names'][index],
-                    //       // );
-                    //     },
-                    //     icon: Icon(Icons.download_done_outlined),
-                    //   ),
-                    // ),
+                    trailing:Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [IconButton(
+                        onPressed: () {
+                          deleteVideosInDb(videos[index].id!);
+                          deleteVideosInFileSystem(videos[index].path!);
+                          setState(() {videos.removeAt(index);});
+                        },
+                        icon: Icon(Icons.delete_forever_sharp),
+                      ),],
+                    ),
                     leading: Card(
                       child: IconButton(
                         onPressed: () {
@@ -277,6 +300,7 @@ class _OfflinePageState extends State<OfflinePage> {
                         height: 1,
                       ),
                     ),
+
                     // subtitle: Text(
                     //   videos[index].course ?? '',
                     //   style: TextStyle(
@@ -291,6 +315,16 @@ class _OfflinePageState extends State<OfflinePage> {
               ),
       ),
     );
+  }
+
+  Future<void> checkAndRemoveDeletedFiles(List<OfflineModel> videos) async {
+    for(OfflineModel video in videos) {
+      bool path = await File(video.path!).exists();
+      if(!path) {
+        deleteVideosInDb(video.id!);
+      }
+    }
+    return ;
   }
 }
 

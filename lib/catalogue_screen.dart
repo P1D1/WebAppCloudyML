@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/models/course_details.dart';
 import 'package:cloudyml_app2/widgets/coupon_code.dart';
@@ -180,9 +181,14 @@ class _CatelogueScreenState extends State<CatelogueScreen>
                                         width:
                                             MediaQuery.of(context).size.height *
                                                 0.6,
-                                        child: Image.network(
-                                          course[index].courseImageUrl,
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              course[index].courseImageUrl,
                                           fit: BoxFit.cover,
+                                          placeholder: (context, url) =>
+                                              CircularProgressIndicator(),
+                                          errorWidget: (context, url, error) =>
+                                              Icon(Icons.error),
                                         ),
                                       ),
                                     ),
@@ -235,7 +241,7 @@ class _CatelogueScreenState extends State<CatelogueScreen>
                           includes(context),
                           Container(
                             child: Curriculam(
-                              courseDetail: course[index], 
+                              courseDetail: course[index],
                             ),
                           ),
                           Container(

@@ -1,4 +1,5 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/MyAccount/myaccount.dart';
 import 'package:cloudyml_app2/Providers/UserProvider.dart';
@@ -127,7 +128,7 @@ class _HomePageState extends State<HomePage> {
                       NetworkImage(userprovider.userModel?.image ?? ''),
                   backgroundColor: Colors.transparent,
                   backgroundImage:
-                      NetworkImage('https://stratosphere.co.in/img/user.jpg'),
+                      CachedNetworkImageProvider('https://stratosphere.co.in/img/user.jpg',),
                 ),
               ),
               decoration: BoxDecoration(

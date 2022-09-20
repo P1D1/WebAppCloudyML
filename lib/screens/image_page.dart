@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudyml_app2/models/firebase_file.dart';
 import 'package:flutter/material.dart';
 
@@ -40,8 +41,10 @@ class ImagePage extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
               },
-              child: Image.network(
-                file.url,
+              child: CachedNetworkImage(
+                imageUrl: file.url,
+                placeholder: (context, url) => CircularProgressIndicator(),
+                errorWidget: (context, url, error) => Icon(Icons.error),
                 height: height,
                 width: width,
                 // fit: BoxFit.cover,
