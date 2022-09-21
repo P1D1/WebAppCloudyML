@@ -395,7 +395,7 @@ class _GroupsListState extends State<GroupsList> {
                             // .orderBy("time",descending: true)
                             .snapshots(),
                         builder: (context,AsyncSnapshot<QuerySnapshot> snapshotGroupList){
-                               print("snapshotData = ${snapshotGroupList.data!.docs[0]["icon"]}");
+                               // print("snapshotData = ${snapshotGroupList.data!.docs[0]["icon"]}");
                           if(snapshotGroupList.hasData)
                             {
                               return
