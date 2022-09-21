@@ -112,12 +112,17 @@ class _CurriculamState extends State<Curriculam> {
                         // height: 30,
                         child: Row(
                           children: [
-                            Text(
-                              widget.courseDetail.curriculum['sectionsName']
-                                  [index1],
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontFamily: 'Medium',
+                            SizedBox(
+                              width: 300,
+                              child: Text(
+                                widget.courseDetail.curriculum['sectionsName']
+                                    [index1],
+                                    overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  overflow: TextOverflow.ellipsis,
+                                  fontSize: 15,
+                                  fontFamily: 'Medium',
+                                ),
                               ),
                             ),
                           ],

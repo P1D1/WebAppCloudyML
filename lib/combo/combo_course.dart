@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/catalogue_screen.dart';
 import 'package:cloudyml_app2/combo/combo_store.dart';
@@ -104,11 +105,13 @@ class _ComboCourseState extends State<ComboCourse> {
     var horizontalScale = screenWidth / mockUpWidth;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Courses You Have!',
-        style: TextStyle(color: Colors.black,
-        fontFamily: 'bold',
-        fontWeight: FontWeight.bold),
-      ),
+        title: Text(
+          'Courses You Have!',
+          style: TextStyle(
+              color: Colors.black,
+              fontFamily: 'bold',
+              fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: InkWell(
@@ -167,9 +170,9 @@ class _ComboCourseState extends State<ComboCourse> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) =>
-                                              VideoScreen(
-                                            courseName: course[index].courseName,
+                                          builder: (context) => VideoScreen(
+                                            courseName:
+                                                course[index].courseName,
                                             isdemo: null,
                                             sr: null,
                                           ),
@@ -221,8 +224,13 @@ class _ComboCourseState extends State<ComboCourse> {
                                                 bottomRight:
                                                     Radius.circular(15),
                                               )),
-                                              child: Image.network(
-                                                course[index].courseImageUrl,
+                                              child: CachedNetworkImage(
+                                                imageUrl:course[index].courseImageUrl,
+                                                placeholder: (context, url) =>
+                                                    CircularProgressIndicator(),
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        Icon(Icons.error),
                                               ),
                                             ),
                                           ),

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class GroupInfoScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
               alignment: Alignment.center,
               child: CircleAvatar(
                 radius: size.width * 0.25,
-                backgroundImage: NetworkImage(
+                backgroundImage: CachedNetworkImageProvider(
                   widget.groupData!["data"]["icon"],
                 ),
               ),

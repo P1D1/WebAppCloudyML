@@ -56,4 +56,25 @@ class Utils {
       showToast(error.toString());
     }
   }
+
+
+  static Future<File> localFile(String path) async {
+    print('$path');
+    return File('$path');
+  }
+
+  static Future<int> deleteFile(String path) async {
+    try {
+      final file = await localFile(path);
+      if(await file.exists()) {
+        await file.delete();
+      } else {
+        throw new Exception("File Not Exist in the path -: $path");
+      }
+      return 1;
+    } catch (e) {
+      //TODO: Logs error handler
+      return 0;
+    }
+  }
 }

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/MyAccount/ChangePassword.dart';
 import 'package:cloudyml_app2/MyAccount/EditProfile.dart';
@@ -80,7 +81,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
                     radius: min(horizontalScale, verticalScale) * 30.0,
                     backgroundImage: AssetImage('assets/user.jpg'),
                     foregroundImage:
-                        NetworkImage(userprovider.userModel?.image ?? ''),
+                        CachedNetworkImageProvider(userprovider.userModel?.image ?? ''),
                     backgroundColor: Colors.transparent,
                   ),
                 ),

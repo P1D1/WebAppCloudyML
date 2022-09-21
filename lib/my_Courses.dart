@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/combo/combo_course.dart';
 import 'package:cloudyml_app2/combo/combo_store.dart';
@@ -101,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   static final FlutterLocalNotificationsPlugin
-  _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+      _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   @override
   void initState() {
     super.initState();
@@ -111,10 +112,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // dbCheckerForDaysLeftForLimitedAccess();
   }
 
-
   @override
   Widget build(BuildContext context) {
-
     List<CourseDetails> course = Provider.of<List<CourseDetails>>(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
@@ -247,7 +246,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       type: PageTransitionType
                                           .rightToLeftWithFade,
                                       child: PdfCourseScreen(
-                                        curriculum: course[index].curriculum as Map<String,dynamic>,
+                                        curriculum: course[index].curriculum
+                                            as Map<String, dynamic>,
                                       ),
                                     ),
                                   );
@@ -318,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 blurRadius: 47)
                                           ],
                                           image: DecorationImage(
-                                              image: NetworkImage(
+                                              image: CachedNetworkImageProvider(
                                                 course[index].courseImageUrl,
                                               ),
                                               fit: BoxFit.fitWidth),
@@ -672,8 +672,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                         child: ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(10),
-                                          child: Image.network(
-                                            course[index].courseImageUrl,
+                                          child: CachedNetworkImage(
+                                            imageUrl:
+                                                course[index].courseImageUrl,
+                                            placeholder: (context, url) =>
+                                                CircularProgressIndicator(),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    Icon(Icons.error),
                                             fit: BoxFit.cover,
                                           ),
                                         ),

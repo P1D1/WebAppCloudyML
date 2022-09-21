@@ -762,16 +762,16 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget send(String dateString)
   {
     return Center(
-              child:Container(
-                margin: EdgeInsets.only(top: 5,bottom: 3),
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                    color: Color(0xFF7860DC),
-                    borderRadius: BorderRadius.circular(20)
-                ),
-                child:
-                Text("$dateString",style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.white),),
-          )
+        child:Container(
+          margin: EdgeInsets.only(top: 5,bottom: 3),
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+              color: Color(0xFF7860DC),
+              borderRadius: BorderRadius.circular(20)
+          ),
+          child:
+          Text("$dateString",style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.white),),
+        )
     );
   }
 
@@ -1007,29 +1007,29 @@ class _ChatScreenState extends State<ChatScreen> {
                                 return Column(
                                   children: [
 
-                                      index!=snapshot.data!.length-1?
-                                          snapshot.data![index]["time"].toDate().toString().substring(0,10)!=
-                                          snapshot.data![index+1]["time"].toDate().toString().substring(0,10)?
-                                          snapshot.data![index]["time"].toDate().toString().substring(0,10)==
-                                DateTime.now().subtract(Duration(days: 1)).toString().substring(0,10)?
-                                          send("yesterday"):
-                                          snapshot.data![index]["time"].toDate().toString().substring(0,10)==
-                                              DateTime.now().toString().substring(0,10)?
-                                              send("today"):
-                                              send(reverseString(snapshot.data![index]["time"].toDate().toString().substring(0,10))):SizedBox():
-                                      snapshot.data![index]["time"].toDate().toString().substring(0,10)==
-                                          DateTime.now().subtract(Duration(days: 1)).toString().substring(0,10)?
-                                      send("yesterday"):
-                                      snapshot.data![index]["time"].toDate().toString().substring(0,10)==
-                                          DateTime.now().toString().substring(0,10)?
-                                      send("today"):send(reverseString(snapshot.data![index]["time"].toDate().toString().substring(0,10))),
-                                  messages(
-                                  size,
-                                  map,
-                                  context,
-                                  appStorage,
-                                  currentTag,
-                                )
+                                    index!=snapshot.data!.length-1?
+                                    snapshot.data![index]["time"].toDate().toString().substring(0,10)!=
+                                        snapshot.data![index+1]["time"].toDate().toString().substring(0,10)?
+                                    snapshot.data![index]["time"].toDate().toString().substring(0,10)==
+                                        DateTime.now().subtract(Duration(days: 1)).toString().substring(0,10)?
+                                    send("yesterday"):
+                                    snapshot.data![index]["time"].toDate().toString().substring(0,10)==
+                                        DateTime.now().toString().substring(0,10)?
+                                    send("today"):
+                                    send(reverseString(snapshot.data![index]["time"].toDate().toString().substring(0,10))):SizedBox():
+                                    snapshot.data![index]["time"].toDate().toString().substring(0,10)==
+                                        DateTime.now().subtract(Duration(days: 1)).toString().substring(0,10)?
+                                    send("yesterday"):
+                                    snapshot.data![index]["time"].toDate().toString().substring(0,10)==
+                                        DateTime.now().toString().substring(0,10)?
+                                    send("today"):send(reverseString(snapshot.data![index]["time"].toDate().toString().substring(0,10))),
+                                    messages(
+                                      size,
+                                      map,
+                                      context,
+                                      appStorage,
+                                      currentTag,
+                                    )
                                   ],
                                 );
                               },

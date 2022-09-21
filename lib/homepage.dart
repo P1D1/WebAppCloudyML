@@ -1,6 +1,7 @@
 // ignore: import_of_legacy_library_into_null_safe
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudyml_app2/authentication/firebase_auth.dart';
 import 'package:cloudyml_app2/api/firebase_api.dart';
 import 'package:cloudyml_app2/catalogue_screen.dart';
@@ -17,7 +18,6 @@ import 'package:provider/provider.dart';
 // import 'package:ribbon/ribbon.dart';
 import 'package:cloudyml_app2/globals.dart';
 
-
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
@@ -30,7 +30,6 @@ class _HomeState extends State<Home> {
   List<Icon> list = [];
 
   late ScrollController _controller;
-
 
   @override
   void initState() {
@@ -55,7 +54,7 @@ class _HomeState extends State<Home> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: screenWidth ,
+              width: screenWidth,
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
@@ -108,7 +107,7 @@ class _HomeState extends State<Home> {
                             Text(
                               'Home',
                               textScaleFactor:
-                              min(horizontalScale, verticalScale),
+                                  min(horizontalScale, verticalScale),
                               style: TextStyle(
                                   fontSize: 30,
                                   fontWeight: FontWeight.bold,
@@ -118,23 +117,22 @@ class _HomeState extends State<Home> {
                         ),
                       )),
                   Positioned(
-                      top: 30 * verticalScale,
-                      right: 2 * horizontalScale,
-                      child: IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => NotificationPage()
-                            ),
-                          );
-                        },
-                        icon:Icon(Icons.notifications_active,
-                          size: 26,
-                          color: Colors.white,
-                        ),
-
+                    top: 30 * verticalScale,
+                    right: 2 * horizontalScale,
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => NotificationPage()),
+                        );
+                      },
+                      icon: Icon(
+                        Icons.notifications_active,
+                        size: 26,
+                        color: Colors.white,
                       ),
+                    ),
                   ),
                 ],
               ),
@@ -152,7 +150,7 @@ class _HomeState extends State<Home> {
                   fontFamily: 'Poppins',
                   fontSize: 23,
                   letterSpacing:
-                  0 /*percentages not used in flutter. defaulting to zero*/,
+                      0 /*percentages not used in flutter. defaulting to zero*/,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -192,7 +190,7 @@ class _HomeState extends State<Home> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
-                                  const CatelogueScreen()),
+                                      const CatelogueScreen()),
                             );
                           }
                         },
@@ -227,8 +225,12 @@ class _HomeState extends State<Home> {
                                 ),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(15),
-                                  child: Image.network(
-                                    course[index].courseImageUrl,
+                                  child: CachedNetworkImage(
+                                    imageUrl: course[index].courseImageUrl,
+                                    placeholder: (context, url) =>
+                                        CircularProgressIndicator(),
+                                    errorWidget: (context, url, error) =>
+                                        Icon(Icons.error),
                                     fit: BoxFit.fill,
                                     height: 100 * verticalScale,
                                     width: 127 * horizontalScale,
@@ -248,7 +250,7 @@ class _HomeState extends State<Home> {
                                       child: Text(
                                         course[index].courseName,
                                         textScaleFactor:
-                                        min(horizontalScale, verticalScale),
+                                            min(horizontalScale, verticalScale),
                                         textAlign: TextAlign.left,
                                         style: TextStyle(
                                           color: Color.fromRGBO(0, 0, 0, 1),
@@ -281,11 +283,11 @@ class _HomeState extends State<Home> {
                                               horizontalScale, verticalScale),
                                           style: TextStyle(
                                               color:
-                                              Color.fromRGBO(88, 88, 88, 1),
+                                                  Color.fromRGBO(88, 88, 88, 1),
                                               fontFamily: 'Poppins',
                                               fontSize: 12,
                                               letterSpacing:
-                                              0 /*percentages not used in flutter. defaulting to zero*/,
+                                                  0 /*percentages not used in flutter. defaulting to zero*/,
                                               fontWeight: FontWeight.normal,
                                               height: 1),
                                         ),
@@ -303,7 +305,7 @@ class _HomeState extends State<Home> {
                                               fontFamily: 'Poppins',
                                               fontSize: 18,
                                               letterSpacing:
-                                              0 /*percentages not used in flutter. defaulting to zero*/,
+                                                  0 /*percentages not used in flutter. defaulting to zero*/,
                                               fontWeight: FontWeight.bold,
                                               height: 1),
                                         ),
@@ -337,7 +339,7 @@ class _HomeState extends State<Home> {
                     fontFamily: 'Poppins',
                     fontSize: 23,
                     letterSpacing:
-                    0 /*percentages not used in flutter. defaulting to zero*/,
+                        0 /*percentages not used in flutter. defaulting to zero*/,
                     fontWeight: FontWeight.w500,
                     height: 1),
               ),
@@ -356,16 +358,15 @@ class _HomeState extends State<Home> {
                       if (snapshot.hasError) {
                         return Center(
                             child: Text(
-                              'Some error occurred!',
-                              textScaleFactor: min(horizontalScale, verticalScale),
-                            ));
+                          'Some error occurred!',
+                          textScaleFactor: min(horizontalScale, verticalScale),
+                        ));
                       } else {
                         final files = snapshot.data!;
 
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-
                             Expanded(
                               child: GridView.builder(
                                 scrollDirection: Axis.vertical,
@@ -377,10 +378,10 @@ class _HomeState extends State<Home> {
                                   return buildFile(context, file);
                                 },
                                 gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 1,
-                                    mainAxisSpacing: 1),
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 1,
+                                        mainAxisSpacing: 1),
                               ),
                             ),
                           ],
@@ -418,7 +419,7 @@ class _HomeState extends State<Home> {
                         fontFamily: 'Poppins',
                         fontSize: 25,
                         letterSpacing:
-                        0 /*percentages not used in flutter. defaulting to zero*/,
+                            0 /*percentages not used in flutter. defaulting to zero*/,
                         fontWeight: FontWeight.w500,
                         height: 1),
                   ),
@@ -466,7 +467,7 @@ class _HomeState extends State<Home> {
                         );
                       },
                       child: Text(
-                        'My Recomemded Courses',
+                        'My Recommended Courses',
                         textScaleFactor: min(horizontalScale, verticalScale),
                         style: TextStyle(fontSize: 16),
                       ),
@@ -485,9 +486,7 @@ class _HomeState extends State<Home> {
             ),
           ],
         ),
-
       ),
-      
     );
   }
 }
