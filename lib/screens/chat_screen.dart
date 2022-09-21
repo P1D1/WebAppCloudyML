@@ -759,7 +759,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return reverseString;
   }
 
-  Widget send(String dateString)
+  Widget showDateInChatScreen(String dateString)
   {
     return Center(
         child:Container(
@@ -1012,17 +1012,17 @@ class _ChatScreenState extends State<ChatScreen> {
                                         snapshot.data![index+1]["time"].toDate().toString().substring(0,10)?
                                     snapshot.data![index]["time"].toDate().toString().substring(0,10)==
                                         DateTime.now().subtract(Duration(days: 1)).toString().substring(0,10)?
-                                    send("yesterday"):
+                                    showDateInChatScreen("yesterday"):
                                     snapshot.data![index]["time"].toDate().toString().substring(0,10)==
                                         DateTime.now().toString().substring(0,10)?
-                                    send("today"):
-                                    send(reverseString(snapshot.data![index]["time"].toDate().toString().substring(0,10))):SizedBox():
+                                    showDateInChatScreen("today"):
+                                    showDateInChatScreen(reverseString(snapshot.data![index]["time"].toDate().toString().substring(0,10))):SizedBox():
                                     snapshot.data![index]["time"].toDate().toString().substring(0,10)==
                                         DateTime.now().subtract(Duration(days: 1)).toString().substring(0,10)?
-                                    send("yesterday"):
+                                    showDateInChatScreen("yesterday"):
                                     snapshot.data![index]["time"].toDate().toString().substring(0,10)==
                                         DateTime.now().toString().substring(0,10)?
-                                    send("today"):send(reverseString(snapshot.data![index]["time"].toDate().toString().substring(0,10))),
+                                    showDateInChatScreen("today"):showDateInChatScreen(reverseString(snapshot.data![index]["time"].toDate().toString().substring(0,10))),
                                     messages(
                                       size,
                                       map,
