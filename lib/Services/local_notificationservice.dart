@@ -11,7 +11,7 @@ import 'package:rxdart/rxdart.dart';
 
 class LocalNotificationService{
 
- static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
   static final onNotifications=BehaviorSubject<String?>();
   static void initialize(){
     // initializationSettings  for Android
@@ -28,42 +28,42 @@ class LocalNotificationService{
   //   Navigator.push(context, MaterialPageRoute(builder: (context)=>GroupsList()));
   // }
 
- static Future<Map<String, dynamic>> display(RemoteMessage message,courseName)async{
-              try {
-                FirebaseFirestore _firestore=FirebaseFirestore.instance;
-                final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-                const NotificationDetails notificationDetails = NotificationDetails(
-                  android: AndroidNotificationDetails(
-                      "CloudyML",
-                      "CloudyMLchannel",
-                      importance: Importance.max,
-                      priority: Priority.high,
-                      color: Colors.green,
-                      playSound: true,
-                      channelDescription: 'Chat Notification'
-                  ),
-                );
-                String imageUrl = message.notification!.android!.imageUrl??'';
-                var data = {"ID":id,"student_id":FirebaseAuth.instance.currentUser!.uid,"CourseName":courseName};
-                await _notificationsPlugin.show(
-                  id,
-                  message.notification!.title,
-                  message.notification!.body,
-                  notificationDetails,
-                  //payload: message.data['_id'],
-                );
-                return data;
-                // _firestore.collection('Notifications')
-                //     .add({
-                //       'title':message.notification!.title,
-                //       'description':message.notification!.body,
-                //       'icon':imageUrl
-                // });
-              } on Exception catch (e) {
-                print(e);
-                return {};
-              }
- }
+  static Future<Map<String, dynamic>> display(RemoteMessage message,courseName)async{
+    try {
+      FirebaseFirestore _firestore=FirebaseFirestore.instance;
+      final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      const NotificationDetails notificationDetails = NotificationDetails(
+        android: AndroidNotificationDetails(
+            "CloudyML",
+            "CloudyMLchannel",
+            importance: Importance.max,
+            priority: Priority.high,
+            color: Colors.green,
+            playSound: true,
+            channelDescription: 'Chat Notification'
+        ),
+      );
+      String imageUrl = message.notification!.android!.imageUrl??'';
+      var data = {"ID":id,"student_id":FirebaseAuth.instance.currentUser!.uid,"CourseName":courseName};
+      await _notificationsPlugin.show(
+        id,
+        message.notification!.title,
+        message.notification!.body,
+        notificationDetails,
+        //payload: message.data['_id'],
+      );
+      return data;
+      // _firestore.collection('Notifications')
+      //     .add({
+      //       'title':message.notification!.title,
+      //       'description':message.notification!.body,
+      //       'icon':imageUrl
+      // });
+    } on Exception catch (e) {
+      print(e);
+      return {};
+    }
+  }
 
   static void createanddisplaynotification(RemoteMessage message) async {
     try {
@@ -71,13 +71,13 @@ class LocalNotificationService{
       final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       const NotificationDetails notificationDetails = NotificationDetails(
         android: AndroidNotificationDetails(
-          "CloudyML",
-          "CloudyMLchannel",
-          importance: Importance.max,
-          priority: Priority.high,
-          color: Colors.green,
-          playSound: true,
-          channelDescription: 'Chat Notification'
+            "CloudyML",
+            "CloudyMLchannel",
+            importance: Importance.max,
+            priority: Priority.high,
+            color: Colors.green,
+            playSound: true,
+            channelDescription: 'Chat Notification'
         ),
       );
       String imageUrl = message.notification!.android!.imageUrl??'';
@@ -127,14 +127,14 @@ class LocalNotificationService{
         htmlFormatContent: true,
         htmlFormatContentTitle: true
     );
-      return NotificationDetails(
+    return NotificationDetails(
         android: AndroidNotificationDetails(
-          "CloudyML",
-          "CloudyMLchannel",
-          styleInformation: bigPicture,
-          importance: Importance.max,
-          priority: Priority.high
+            "CloudyML",
+            "CloudyMLchannel",
+            styleInformation: bigPicture,
+            importance: Importance.max,
+            priority: Priority.high
         )
-      );
+    );
   }
 }
