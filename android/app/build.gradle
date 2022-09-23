@@ -70,6 +70,10 @@ android {
         // flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        multiDexEnabled true
+        ndk {
+               abiFilters 'x86', 'armeabi-v7a'
+         }
     }
 
    signingConfigs {
@@ -93,4 +97,5 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.work:work-runtime-ktx:2.7.0'
 }
