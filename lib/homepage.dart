@@ -2,6 +2,8 @@
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloudyml_app2/Providers/UserProvider.dart';
 import 'package:cloudyml_app2/authentication/firebase_auth.dart';
 import 'package:cloudyml_app2/api/firebase_api.dart';
 import 'package:cloudyml_app2/catalogue_screen.dart';
@@ -14,9 +16,14 @@ import 'package:cloudyml_app2/store.dart';
 import 'package:flutter/material.dart';
 import 'package:cloudyml_app2/fun.dart';
 import 'package:cloudyml_app2/models/firebase_file.dart';
+import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 // import 'package:ribbon/ribbon.dart';
 import 'package:cloudyml_app2/globals.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:badges/badges.dart';
+
+
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -30,16 +37,36 @@ class _HomeState extends State<Home> {
   List<Icon> list = [];
 
   late ScrollController _controller;
+  final notificationBox = Hive.box('NotificationBox');
+
+showNotification()
+async{
+  final provider = Provider.of<UserProvider>(context,listen:false);
+  if(notificationBox.isEmpty)
+    {
+      notificationBox.put(1,{"count":0});
+      provider.showNotificationHomeScreen(notificationBox.values.first["count"]);
+    }
+  else
+  {
+    provider.showNotificationHomeScreen(notificationBox.values.first["count"]);
+  }
+
+}
+
 
   @override
   void initState() {
+    showNotification();
     _controller = ScrollController();
     super.initState();
     futureFiles = FirebaseApi.listAll('reviews/');
   }
 
+
   @override
   Widget build(BuildContext context) {
+    final providerNotification = Provider.of<UserProvider>(context,listen: false);
     final size = MediaQuery.of(context).size;
     final height = size.height;
     final width = size.width;
@@ -117,22 +144,61 @@ class _HomeState extends State<Home> {
                         ),
                       )),
                   Positioned(
-                    top: 30 * verticalScale,
+                    top: 31 * verticalScale,
                     right: 2 * horizontalScale,
-                    child: IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => NotificationPage()),
-                        );
+                    child: Consumer<UserProvider>(
+                      builder: (context,data,child)
+                      {
+                        return StreamBuilder(
+                            stream: FirebaseFirestore.instance
+                                .collection("Notifications").snapshots(),
+                            builder: (context,AsyncSnapshot<QuerySnapshot> snapshot){
+                               print("-------------${notificationBox.values}");
+                               if(snapshot.data!.docs.length<data.countNotification)
+                                 {
+                                   notificationBox.put(1, {"count":(snapshot.data!.docs.length)});
+                                   providerNotification.showNotificationHomeScreen(notificationBox.values.first["count"]);
+                                 }
+                               return Badge(
+                                 showBadge:
+                                 data.countNotification==snapshot.data!.docs.length ||
+                                 snapshot.data!.docs.length<data.countNotification?false:
+                                 true,
+                                 child: IconButton(
+                                   onPressed: () async{
+                                     await Navigator.push(
+                                       context,
+                                       MaterialPageRoute(
+                                           builder: (context) => NotificationPage()),
+                                     );
+                                     await notificationBox.put(1, {"count":(snapshot.data!.docs.length)});
+                                     await providerNotification.showNotificationHomeScreen(notificationBox.values.first["count"]);
+                                     print("++++++++++++++++++++++++${notificationBox.values}");
+
+                                   },
+                                   icon: Icon(
+                                     Icons.notifications_active,
+                                     size: 30,
+                                     color: Colors.white,
+                                   ),
+                                 ),
+                                 badgeColor: Colors.red,
+                                 toAnimate: false,
+                                 badgeContent: Text(
+                                   snapshot.data!.docs.length-notificationBox.values.first["count"]>=0?
+                                   (snapshot.data!.docs.length-notificationBox.values.first["count"]).toString():
+                                   (notificationBox.values.first["count"]-snapshot.data!.docs.length).toString(),
+                                   style: TextStyle(fontSize: 9,color: Colors.white,fontWeight: FontWeight.bold),),
+                                 position: BadgePosition(
+                                     top: (2-2*(snapshot.data!.docs.length).toString().length) * verticalScale,
+                                     end:data.countNotification>=100?2:7,
+                                     // (7+((snapshot.data!.docs.length).toString().length))
+                                 ),
+                               );
+                            });
                       },
-                      icon: Icon(
-                        Icons.notifications_active,
-                        size: 26,
-                        color: Colors.white,
-                      ),
-                    ),
+                    )
+
                   ),
                 ],
               ),

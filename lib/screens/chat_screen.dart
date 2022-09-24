@@ -256,7 +256,6 @@ class _ChatScreenState extends State<ChatScreen> {
         pickedFile = File(xFile.path);
         pickedFileName = xFile.name.toString();
         uploadFile("image");
-        await sendNotification(pickedFileName,widget.userData["name"]);
       }
     });
   }
@@ -269,8 +268,6 @@ class _ChatScreenState extends State<ChatScreen> {
       pickedFile = a;
       pickedFileName = result.names[0].toString();
       uploadFile("file");
-      await sendNotification(pickedFileName,widget.userData["name"]);
-
     }
   }
 
@@ -305,6 +302,7 @@ class _ChatScreenState extends State<ChatScreen> {
       //   {'time': FieldValue.serverTimestamp()},
       // );
 
+      await filterMentorStudentNotification(pickedFileName);
       var uploadTask = await ref.putFile(pickedFile!);
 
       String fileUrl = await uploadTask.ref.getDownloadURL();
@@ -347,7 +345,7 @@ class _ChatScreenState extends State<ChatScreen> {
       //   textFocusCheck = false;
       // });
 
-      await sendNotification(messages,widget.userData["name"]);
+      await filterMentorStudentNotification(messages);
     }
   }
 
@@ -451,10 +449,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
   static final FlutterLocalNotificationsPlugin
   _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
+  bool removeNotificationOnChatScreenOn = false;
   final myBox = Hive.box('myBox');
   @override
   void initState() {
+    removeNotificationOnChatScreenOn = true;
     // TODO: implement initState
     // _message.addListener();
 
@@ -465,7 +464,7 @@ class _ChatScreenState extends State<ChatScreen> {
     //   print("Hello notify");
     //   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>GroupsList()));
     // });
-
+    RemoveNotificationChatScreen();
     print("GroupData = ${widget.groupData["student_id"]}");
     print("USerData =  ${widget.userData["id"]}");
     getStoragePath();
@@ -484,14 +483,11 @@ class _ChatScreenState extends State<ChatScreen> {
     //           MaterialPageRoute(builder: (context) => GroupsList()));
     //     }
     // });
+
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async{
-      print("MEssage");
+      print("MEssageChat screen");
       print(widget.groupData!["name"]);
-      var data = await LocalNotificationService.display(message,widget.groupData!["name"]);
-      print(data);
-      await myBox.put(data["ID"], data);
-      // await stream();
-      print("Message removed");
     });
 
 
@@ -504,9 +500,26 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     });
 
-    removeNotification();
 
     super.initState();
+  }
+
+  RemoveNotificationChatScreen()
+  async{
+    var dataValues = await myBox.values;
+    for( var i in dataValues)
+      {
+        try{
+          if(i["DocumentId"].toString()==widget.groupId.toString())
+          {
+           await removeNotification(i["ID"]);
+          }
+        }
+        catch(err)
+    {
+      print(err);
+    }
+      }
   }
 
   List? groupsList;
@@ -548,180 +561,219 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Map? userData = {};
 
+removeNotification(ID)
+async{
+  await _flutterLocalNotificationsPlugin.cancel(ID);
+  await myBox.delete(ID);
+}
 
 
-  removeNotification()
-  async{
+filterMentorStudentNotification(message)
+async{
+   var mentorList = widget.groupData["mentors"];
+   print(mentorList);
 
+   if(widget.userData["role"]=="mentor")
+     {
+       mentorList.remove(widget.userData["id"]);
+       mentorList.add(widget.groupData["student_id"]);
+     }
+   await sendNotification(mentorList,message);
+}
 
-    var data = await myBox.values;
-    print(data);
-    if(widget.groupData["student_id"]==widget.userData["id"])
+sendNotification(List listOfDocumentUsers,message)
+async{
+  for(var documentId in listOfDocumentUsers)
     {
-      for(var i in data)
-      {
-        if(i["CourseName"]==widget.groupData!["name"])
-        {
-          await _flutterLocalNotificationsPlugin.cancel(i["ID"]);
-          await myBox.delete(i["ID"]);
-        }
-      }
-    }
-    else{
-      for(var i in data)
-      {
-        if(i["student_id"]==widget.userData["id"])
-        {
-          await _flutterLocalNotificationsPlugin.cancel(i["ID"]);
-          await myBox.delete(i["ID"]);
-        }
-      }
-    }
-    print(myBox.values);
-  }
-
-  sendNotification(message,senderId)
-  async{
-    var Id = await _firestore
-        .collection('groups')
-        .doc(
-        widget.groupData!.id
-    );
-    var responseData;
-    final response = await Id.get().then((DocumentSnapshot doc){
-      responseData = doc.data() as Map<String,dynamic>;
-    });
-    print(response);
-    var listInstance = [];
-    var list = [];
-    for(int i=0;i<responseData["mentors"].length;i++)
-    {
-      var res = FirebaseFirestore.instance.collection("Users").doc(responseData["mentors"][i]).get();
-      listInstance.add(res);
-    }
-
-    if(responseData["student_id"]!=FirebaseAuth.instance.currentUser!.uid)
-    {
-      print("Mentor message===================");
-      await sendNotificationToStudentsMentors(responseData,list,message,senderId);
-    }
-    else {
-      print("student message -------------------------");
-      await sendNotificationToAllMentors(
-          listInstance, responseData, list, message, senderId,false);
-
-      // await sendAPI(list, message, senderId);
-    }
-  }
-
-  sendNotificationToStudentsMentors(responseData,list,message,senderId)
-  async{
-    var senderId = FirebaseAuth.instance.currentUser!.uid;
-    var listInstance = [];
-    for(int i=0;i<responseData["mentors"].length;i++)
-    {
-      var res = await FirebaseFirestore.instance.collection("Users").doc(responseData["mentors"][i]).get();
-      if(responseData["mentors"][i]!=senderId){
-        listInstance.add(res);
-      }
-      if(i==responseData["mentors"].length-1)
-      {
-        var res = await FirebaseFirestore.instance.collection("Users").doc(responseData["student_id"]).get();
-        listInstance.add(res);
-      }
-      sleep(Duration(milliseconds: 100));
-    }
-    print("listinstance+++++++++++++++++++${listInstance}");
-    await sendNotificationToAllMentors(listInstance, responseData, list, message, senderId,true);
-  }
-
-
-  sendNotificationToAllMentors(listInstance,responseData,listOfTokenId,message,senderId,expression)
-  async{
-
-    print("responsedat = =====-----${responseData["student_id"]}");
-
-
-    const SERVER_API_KEY = "AAAAD5zkKfo:APA91bE5z1j6YGz8xZEAHqAaqI8YNE6lZ6oIEfa8ojnp-bk-Ai2dixXDZ1IgZF-VaKsjQ_3MDFSug0hC9MlyIyXJIUP21mCFlFg8wuSqtBzRtEN9mzALmEN0f0eJGn9xWsISMt_W88pR";
-    int j=0;
-
-    if(expression)
-    {
-      for(j=0;j<listInstance.length;j++)
-      {
-        var getData = listInstance[j].data();
-        print(getData);
-        if(getData["token"]!=null)
-        {
-          listOfTokenId.add(getData["token"]);
-        }
-      }
-    }
-    else
-    {
-      for(j=0;j<listInstance.length;j++)
-      {
-
-        await listInstance[j].then((DocumentSnapshot doc) {
-          responseData = doc.data() as Map<String, dynamic>;
-          if(responseData["token"]!=null)
-          {
-            listOfTokenId.add(responseData["token"]);
-          }
-        });
-
-      }
-    }
-
-
-
-    print("User Id ===================== ${FirebaseAuth.instance.currentUser!.uid}");
-
-
-    print("length = ${listOfTokenId.length}");
-    if(listOfTokenId.length>0)
-    {
-      print(widget.groupData!["name"]);
-      int j=0;
-      while(j<listOfTokenId.length)
-      {
-        try{
-          var headers = {
-            'Authorization': 'key=$SERVER_API_KEY',
-            'Content-Type': 'application/json'
-          };
-          var request = await http.Request('POST', Uri.parse('https://fcm.googleapis.com/fcm/send'));
-          request.body = json.encode({
-            "to": listOfTokenId[j],
-            "notification": {
-              "body": message,
-              "title": widget.userData["name"]
-            }
-          });
-          request.headers.addAll(headers);
-
-          http.StreamedResponse response = await request.send();
-
-          if (response.statusCode == 200) {
-            sleep(Duration(milliseconds: 100));
-            j++;
-            print(await response.stream.bytesToString());
+      await FirebaseFirestore.instance.collection("Users").doc(documentId).get().then(
+        (value) async{
+          try{
+            const SERVER_API_KEY = "AAAAD5zkKfo:APA91bE5z1j6YGz8xZEAHqAaqI8YNE6lZ6oIEfa8ojnp-bk-Ai2dixXDZ1IgZF-VaKsjQ_3MDFSug0hC9MlyIyXJIUP21mCFlFg8wuSqtBzRtEN9mzALmEN0f0eJGn9xWsISMt_W88pR";
+            // print("value = ${value["token"]}");
+            var headers = {
+              'Authorization': 'key=$SERVER_API_KEY',
+              'Content-Type': 'application/json'
+            };
+            var request = await http.Request('POST', Uri.parse('https://fcm.googleapis.com/fcm/send'));
+            request.body = json.encode({
+              "to": value["token"],
+              "notification": {
+                "body": message,
+                "title": widget.userData["name"]
+              },
+              "data":{
+                "DocumentId":widget.groupId.toString(),
+                "SenderId":FirebaseAuth.instance.currentUser!.uid.toString()
+              }
+            });
+            request.headers.addAll(headers);
+            http.StreamedResponse response = await request.send();
+            if (response.statusCode == 200) {
+              print(await response.stream.bytesToString());
           }
           else {
-            sleep(Duration(milliseconds: 100));
-            j++;
-            print(response.reasonPhrase);
+          print(response.reasonPhrase);
           }
           print("Send");
-        }
-        catch(e)
-        {
-          print(e);
-          break;
-        }
-      }
+          }
+          catch(err)
+          {
+            print("Error");
+          }
+        },
+      );
     }
-  }
+}
+
+
+
+  // sendNotification(message,senderId)
+  // async{
+  //   var Id = await _firestore
+  //       .collection('groups')
+  //       .doc(
+  //       widget.groupData!.id
+  //   );
+  //   var responseData;
+  //   final response = await Id.get().then((DocumentSnapshot doc){
+  //     responseData = doc.data() as Map<String,dynamic>;
+  //   });
+  //   print(response);
+  //   var listInstance = [];
+  //   var list = [];
+  //   for(int i=0;i<responseData["mentors"].length;i++)
+  //   {
+  //     var res = FirebaseFirestore.instance.collection("Users").doc(responseData["mentors"][i]).get();
+  //     listInstance.add(res);
+  //   }
+  //
+  //   if(responseData["student_id"]!=FirebaseAuth.instance.currentUser!.uid)
+  //   {
+  //     print("Mentor message===================");
+  //     await sendNotificationToStudentsMentors(responseData,list,message,senderId);
+  //   }
+  //   else {
+  //     print("student message -------------------------");
+  //     await sendNotificationToAllMentors(
+  //         listInstance, responseData, list, message, senderId,false);
+  //
+  //     // await sendAPI(list, message, senderId);
+  //   }
+  // }
+
+  // sendNotificationToStudentsMentors(responseData,list,message,senderId)
+  // async{
+  //   var senderId = FirebaseAuth.instance.currentUser!.uid;
+  //   var listInstance = [];
+  //   for(int i=0;i<responseData["mentors"].length;i++)
+  //   {
+  //     var res = await FirebaseFirestore.instance.collection("Users").doc(responseData["mentors"][i]).get();
+  //     if(responseData["mentors"][i]!=senderId){
+  //       listInstance.add(res);
+  //     }
+  //     if(i==responseData["mentors"].length-1)
+  //     {
+  //       var res = await FirebaseFirestore.instance.collection("Users").doc(responseData["student_id"]).get();
+  //       sleep(Duration(milliseconds: 100));
+  //       listInstance.add(res);
+  //     }
+  //     sleep(Duration(milliseconds: 100));
+  //   }
+  //   print("listinstance+++++++++++++++++++${listInstance}");
+  //   await sendNotificationToAllMentors(listInstance, responseData, list, message, senderId,true);
+  // }
+
+
+  // sendNotificationToAllMentors(listInstance,responseData,listOfTokenId,message,senderId,expression)
+  // async{
+  //
+  //   print("responsedat = =====-----${responseData["student_id"]}");
+  //
+  //
+  //   const SERVER_API_KEY = "AAAAD5zkKfo:APA91bE5z1j6YGz8xZEAHqAaqI8YNE6lZ6oIEfa8ojnp-bk-Ai2dixXDZ1IgZF-VaKsjQ_3MDFSug0hC9MlyIyXJIUP21mCFlFg8wuSqtBzRtEN9mzALmEN0f0eJGn9xWsISMt_W88pR";
+  //   int j=0;
+  //
+  //   if(expression)
+  //   {
+  //     for(j=0;j<listInstance.length;j++)
+  //     {
+  //       var getData = listInstance[j].data();
+  //       print(getData);
+  //       if(getData["token"]!=null)
+  //       {
+  //         listOfTokenId.add(getData["token"]);
+  //       }
+  //     }
+  //   }
+  //   else
+  //   {
+  //     for(j=0;j<listInstance.length;j++)
+  //     {
+  //
+  //       await listInstance[j].then((DocumentSnapshot doc) {
+  //         responseData = doc.data() as Map<String, dynamic>;
+  //         if(responseData["token"]!=null)
+  //         {
+  //           listOfTokenId.add(responseData["token"]);
+  //         }
+  //       });
+  //
+  //     }
+  //   }
+  //
+  //
+  //
+  //   print("User Id ===================== ${FirebaseAuth.instance.currentUser!.uid}");
+  //
+  //
+  //   print("length = ${listOfTokenId.length}");
+  //   if(listOfTokenId.length>0)
+  //   {
+  //     print(widget.groupData!["name"]);
+  //     int j=0;
+  //     while(j<listOfTokenId.length)
+  //     {
+  //       try{
+  //         var headers = {
+  //           'Authorization': 'key=$SERVER_API_KEY',
+  //           'Content-Type': 'application/json'
+  //         };
+  //         var request = await http.Request('POST', Uri.parse('https://fcm.googleapis.com/fcm/send'));
+  //         request.body = json.encode({
+  //           "to": listOfTokenId[j],
+  //           "notification": {
+  //             "body": message,
+  //             "title": widget.userData["name"]
+  //           },
+  //           "data":{
+  //             "DocumentId":widget.groupId.toString(),
+  //             "SenderId":FirebaseAuth.instance.currentUser!.uid.toString()
+  //           }
+  //         });
+  //         request.headers.addAll(headers);
+  //
+  //         http.StreamedResponse response = await request.send();
+  //
+  //         if (response.statusCode == 200) {
+  //           sleep(Duration(milliseconds: 100));
+  //           j++;
+  //           print(await response.stream.bytesToString());
+  //         }
+  //         else {
+  //           sleep(Duration(milliseconds: 100));
+  //           j++;
+  //           print(response.reasonPhrase);
+  //         }
+  //         print("Send");
+  //       }
+  //       catch(e)
+  //       {
+  //         print(e);
+  //         break;
+  //       }
+  //     }
+  //   }
+  // }
 
   String reverseString(String str)
   {
@@ -820,6 +872,7 @@ class _ChatScreenState extends State<ChatScreen> {
     print("user name is ${widget.userData}");
     print("USer = ${widget.groupData.id}");
     return WillPopScope( onWillPop: ()async{
+      removeNotificationOnChatScreenOn = false;
       Navigator.of(context).pop();
       return false;
 
@@ -846,7 +899,7 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 GestureDetector(
                     onTap: () {
-
+                      removeNotificationOnChatScreenOn = false;
                       Navigator.pop(context);
                     },
                     child: Container(

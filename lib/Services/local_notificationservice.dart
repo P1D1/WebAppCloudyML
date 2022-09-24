@@ -28,10 +28,10 @@ class LocalNotificationService{
   //   Navigator.push(context, MaterialPageRoute(builder: (context)=>GroupsList()));
   // }
 
-  static Future<Map<String, dynamic>> display(RemoteMessage message,courseName)async{
+  static display(RemoteMessage message,courseName,id,count)async{
     try {
       FirebaseFirestore _firestore=FirebaseFirestore.instance;
-      final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      // final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       const NotificationDetails notificationDetails = NotificationDetails(
         android: AndroidNotificationDetails(
             "CloudyML",
@@ -44,15 +44,16 @@ class LocalNotificationService{
         ),
       );
       String imageUrl = message.notification!.android!.imageUrl??'';
-      var data = {"ID":id,"student_id":FirebaseAuth.instance.currentUser!.uid,"CourseName":courseName};
+      String NewMessage = count==1?" new message":" new messages";
+      // var data = {"ID":id,"student_id":FirebaseAuth.instance.currentUser!.uid,"CourseName":courseName};
       await _notificationsPlugin.show(
         id,
-        message.notification!.title,
+        message.notification!.title.toString()+"    "+count.toString()+NewMessage,
         message.notification!.body,
         notificationDetails,
         //payload: message.data['_id'],
       );
-      return data;
+      // return data;
       // _firestore.collection('Notifications')
       //     .add({
       //       'title':message.notification!.title,
@@ -61,7 +62,7 @@ class LocalNotificationService{
       // });
     } on Exception catch (e) {
       print(e);
-      return {};
+      // return {};
     }
   }
 

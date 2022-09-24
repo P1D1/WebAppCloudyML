@@ -16,10 +16,18 @@ class UserProvider with ChangeNotifier{
 
   User? get user=> _user;
   UserModel? get userModel=> _userModel;
+  int countNotification = 0;
 
   UserProvider.initialize():
       _auth=FirebaseAuth.instance{
           _auth?.authStateChanges().listen(_onStateChangedme);
+  }
+
+
+  showNotificationHomeScreen(count)
+  {
+    countNotification =count;
+    notifyListeners();
   }
 
 

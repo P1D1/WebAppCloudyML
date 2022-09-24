@@ -72,6 +72,7 @@ Future<void> main() async {
 
   await Hive.initFlutter();
   await Hive.openBox('myBox');
+  await Hive.openBox("NotificationBox");
   WidgetsFlutterBinding.ensureInitialized();
   AwesomeNotifications().initialize(null, [
     NotificationChannel(
@@ -264,6 +265,15 @@ class MyApp extends StatelessWidget {
               initialData: [],
             ),
           ],
+
+          // builder: (context,child)
+          // {
+          //   return MediaQuery(
+          //     child: child!,
+          //     data: MediaQuery.of(context).copyWith(textScaleFactor: 1.15),
+          //   );
+          // },
+
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'CloudyML',
@@ -271,7 +281,10 @@ class MyApp extends StatelessWidget {
               ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
                 return Container();
               };
-              return widget!;
+              return MediaQuery(
+                child: widget!,
+                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.15),
+              );
             },
             theme: ThemeData(
               primarySwatch: Colors.blue,

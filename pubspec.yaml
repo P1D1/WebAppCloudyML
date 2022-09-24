@@ -33,7 +33,6 @@ dependencies:
 
   hive:
   hive_flutter:
-
   firebase_core: ^1.19.2
   firebase_storage: ^10.2.14
   cloud_firestore: ^3.3.0
@@ -97,7 +96,7 @@ dependencies:
   flutter_pdfview: ^1.2.1
   better_player: ^0.0.83
   firestore_ui: ^1.24.0
-  
+
   
 dev_dependencies:
   flutter_test:

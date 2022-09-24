@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloudyml_app2/services/local_notificationservice.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
@@ -7,7 +8,9 @@ import 'package:page_transition/page_transition.dart';
 import 'package:drop_shadow_image/drop_shadow_image.dart';
 import 'package:lottie/lottie.dart';
 import '../authentication/firebase_auth.dart';
-
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive/hive.dart';
 class splash extends StatefulWidget {
   const splash({Key? key}) : super(key: key);
 
@@ -16,6 +19,11 @@ class splash extends StatefulWidget {
 }
 
 class _splashState extends State<splash> {
+
+
+  static final FlutterLocalNotificationsPlugin
+  _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  final myBox = Hive.box('myBox');
   @override
   void initState() {
     // TODO:implement initState
@@ -42,12 +50,49 @@ class _splashState extends State<splash> {
     );
 
     ////foreground notification
-    FirebaseMessaging.onMessage.listen((message) {
-      if (message.notification != null) {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async{
+      if (message.data["SenderId"]!=null || message.data["SenderId"]!="") {
         print(message.notification!.title);
         print(message.notification!.body);
+
+        var expression = true;
+        print(await myBox.values.toString()+"ppppppp");
+      final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      var data = {"ID":id,"student_id":FirebaseAuth.instance.currentUser!.uid,
+      "senderID":message.data["SenderId"],"DocumentId":message.data["DocumentId"],"count":1};
+      var dataValues = await myBox.values;
+      int count;
+      if(dataValues.isNotEmpty)
+      {
+      for(var i in dataValues)
+      {
+      if(i["senderID"]==data["senderID"])
+      {
+      expression = false;
+      count = i["count"]+1;
+      removeNotification(i["ID"]);
+      await LocalNotificationService.display(message,"", id, count);
+      data = {"ID":id,"student_id":FirebaseAuth.instance.currentUser!.uid,
+      "senderID":i["senderID"],"DocumentId":i["DocumentId"],"count":count};
+      await myBox.put(data["ID"], data);
       }
-      LocalNotificationService.createanddisplaynotification(message);
+      }
+      if(expression)
+      {
+      await LocalNotificationService.display(message,"",id, 1);
+      await myBox.put(data["ID"], data);
+      }
+      }
+      else
+      {
+      await LocalNotificationService.display(message,"",id,1);
+      await myBox.put(data["ID"], data);
+      }
+      }
+      else
+        {
+          LocalNotificationService.createanddisplaynotification(message);
+        }
     });
 
     ////app is background but opened and user taps on the notification
@@ -60,7 +105,7 @@ class _splashState extends State<splash> {
       //   'icon':imageUrl
       // });
       final routeFromMessage = message.data["route"];
-      print(routeFromMessage);
+      print("route = "+routeFromMessage);
       Navigator.of(context).pushNamed(routeFromMessage);
     });
   }
@@ -77,6 +122,12 @@ class _splashState extends State<splash> {
   //   }
   // }
 
+  removeNotification(ID)
+  async{
+    await _flutterLocalNotificationsPlugin.cancel(ID);
+    await myBox.delete(ID);
+  }
+  
   void pushToHome() {
     Navigator.pushReplacement(
       context,
