@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:open_file/open_file.dart';
+// import 'package:open_file/open_file.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -36,10 +37,10 @@ Future openFile({required String url, String? fileName}) async {
       Fluttertoast.showToast(msg: "Downloading...");
       final downloadedFile = await downloadFile(url, fileName!, file);
       if (downloadedFile != null) {
-        OpenFile.open(downloadedFile.path);
+        OpenFilex.open(downloadedFile.path);
       }
     } else {
-      OpenFile.open(file.path);
+      OpenFilex.open(file.path);
     }
   }
 }

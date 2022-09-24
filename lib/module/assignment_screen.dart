@@ -6,7 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
-import 'package:open_file/open_file.dart';
+// import 'package:open_file/open_file.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -157,7 +158,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       //       break;
       //     case TaskState.paused:
       showToast('File is downloaded');
-      OpenFile.open(filePath);
+      OpenFilex.open(filePath);
       //     // TODO: Handle this case.
       //     break;
       //   case TaskState.success:
@@ -197,7 +198,7 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       //       break;
       //     case TaskState.paused:
       showToast('File is downloaded');
-      OpenFile.open(filePath);
+      OpenFilex.open(filePath);
       //     // TODO: Handle this case.
       //     break;
       //   case TaskState.success:
