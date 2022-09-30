@@ -106,8 +106,8 @@ Widget MessageTile(size, map, displayName, currentTag) {
           Align(
             alignment: Alignment.topLeft,
             child:
-            RichText(
-              text: map["message"].contains("https")?
+            SelectableText.rich(
+               map["message"].contains("https")?
               TextSpan(children: List.generate(list.length, (index) {
                 return TextSpan(
                   text: list[index]+" ",
