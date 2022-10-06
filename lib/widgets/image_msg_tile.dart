@@ -79,12 +79,13 @@ class _ImageMsgTileState extends State<ImageMsgTile> {
                     ),
                     Container(
                       constraints: BoxConstraints(minHeight: size.width * 0.5),
-                      child: checkImageExists(widget.map!["message"]) != null
-                          ? Image.file(
-                              File(filePath),
-                              fit: BoxFit.cover,
-                            )
-                          : CachedNetworkImage(
+                      child:
+                      // checkImageExists(widget.map!["message"]) != null
+                      //     ? Image.file(
+                      //         File(filePath),
+                      //         fit: BoxFit.cover,
+                      //       )
+                           CachedNetworkImage(
                               placeholder: (context, url) =>
                                   CircularProgressIndicator(),
                               errorWidget: (context, url, error) =>

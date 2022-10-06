@@ -1,18 +1,13 @@
 import 'dart:async';
-
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloudyml_app2/MyAccount/myaccount.dart';
 import 'package:cloudyml_app2/Providers/AppProvider.dart';
 import 'package:cloudyml_app2/Providers/UserProvider.dart';
 import 'package:cloudyml_app2/Providers/chat_screen_provider.dart';
 import 'package:cloudyml_app2/Services/database_service.dart';
 import 'package:cloudyml_app2/authentication/firebase_auth.dart';
-import 'package:cloudyml_app2/globals.dart';
 import 'package:cloudyml_app2/models/course_details.dart';
-import 'package:cloudyml_app2/models/user_details.dart';
 import 'package:cloudyml_app2/models/video_details.dart';
 import 'package:cloudyml_app2/my_Courses.dart';
-import 'package:cloudyml_app2/offline/offline_videos.dart';
 import 'package:cloudyml_app2/screens/chat_screen.dart';
 import 'package:cloudyml_app2/screens/splash.dart';
 import 'package:cloudyml_app2/services/local_notificationservice.dart';
@@ -20,9 +15,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hive/hive.dart';
@@ -65,8 +58,6 @@ Future<void> backgroundHandler(RemoteMessage message) async {
 }
 
 
-final FlutterLocalNotificationsPlugin
-_flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
 
@@ -74,23 +65,21 @@ Future<void> main() async {
   await Hive.openBox('myBox');
   await Hive.openBox("NotificationBox");
   WidgetsFlutterBinding.ensureInitialized();
-  AwesomeNotifications().initialize(null, [
-    NotificationChannel(
-        channelKey: 'image',
-        channelName: 'CloudyML',
-        channelDescription: "CloudyML",
-        enableLights: true,
-        playSound: true,
-        locked: true,
-        defaultColor: Colors.green,
-    )
-  ]);
 
-  await Firebase.initializeApp();
+
+  await Firebase.initializeApp(
+      options: FirebaseOptions(
+          apiKey: "AIzaSyBdAio1wI3RVwl32RoKE7F9GNG_oWBpfbM",
+          appId: "1:67056708090:web:f4a43d6b987991016ddc43",
+          messagingSenderId: "67056708090",
+          projectId: "cloudyml-app",
+          storageBucket: "cloudyml-app.appspot.com",
+          databaseURL: "https://cloudyml-app-default-rtdb.firebaseio.com",
+          authDomain: "cloudyml-app.firebaseapp.com")
+  );
 
   FirebaseMessaging.onBackgroundMessage(backgroundHandler);
   LocalNotificationService.initialize();
-  await _flutterLocalNotificationsPlugin.cancelAll();
   runApp(MaterialApp(debugShowCheckedModeBanner: false, home: MyApp()));
 
   SystemChrome.setSystemUIOverlayStyle(

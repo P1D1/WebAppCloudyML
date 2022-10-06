@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudyml_app2/Providers/chat_screen_provider.dart';
 import 'package:cloudyml_app2/fun.dart';
-import 'package:cloudyml_app2/screens/group_info.dart';
-import 'package:cloudyml_app2/screens/groups_list.dart';
+import 'package:cloudyml_app2/helpers/file_handler.dart';
 import 'package:cloudyml_app2/widgets/audio_msg_tile.dart';
 import 'package:cloudyml_app2/widgets/bottom_sheet.dart';
 import 'package:cloudyml_app2/widgets/file_msg_tile.dart';
@@ -15,23 +13,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
-import "package:image_picker/image_picker.dart";
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:record/record.dart';
-import 'package:badges/badges.dart';
 import 'package:lottie/lottie.dart';
-import '../StreamController/StreamControllers.dart';
-import '../widgets/assignment_bottomsheet.dart';
-import '../Services/local_notificationservice.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/screens/groups_list.dart';
@@ -62,14 +55,20 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
 //....................VARIABLES.................................
 
+  List<DocumentSnapshot> listOfDocumentSnapshot = [];
+
+  DocumentSnapshot<Map<String, dynamic>>? _lastDocument1;
+
   DocumentSnapshot<Map<String, dynamic>>? _lastDocument;
   TextEditingController _message = TextEditingController();
 
-  FirebaseAuth _auth = FirebaseAuth.instance;
+  // FirebaseAuth _auth = FirebaseAuth.instance;
 
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   File? pickedFile;
+
+  Uint8List? uploadedFile;
 
   String? pickedFileName;
 
@@ -246,30 +245,120 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  //image picker from camera logic
-  Future getImage() async {
-    //to get the image from galary
-    ImagePicker _picker = ImagePicker();
+  // _getChats()
+  // async{
+  //   if(_lastDocument1!=null)
+  //   {
+  //     await  FirebaseFirestore.instance
+  //         .collection("groups")
+  //         .doc(widget.groupData!.id)
+  //         .collection("chats")
+  //         .orderBy("time", descending: true).startAfterDocument(_lastDocument1!).limit(chatLimit).get().then((value) {
+  //       print("Value ==== ${value.docs.first}");
+  //       for(var i in value.docs)
+  //       {
+  //         listOfDocumentSnapshot.add(i);
+  //       }
+  //       print(listOfDocumentSnapshot);
+  //     });
+  //   }
+  //   else
+  //   {
+  //     await  FirebaseFirestore.instance
+  //         .collection("groups")
+  //         .doc(widget.groupData!.id)
+  //         .collection("chats")
+  //     // .startAfterDocument(_lastDocument1!)
+  //         .orderBy("time", descending: true).limit(chatLimit).get().then((value) {
+  //       print("Value ==== ${value.docs.first}");
+  //       for(var i in value.docs)
+  //       {
+  //         listOfDocumentSnapshot.add(i);
+  //       }
+  //       print(listOfDocumentSnapshot);
+  //     });
+  //   }
+  //
+  //   _lastDocument1 = listOfDocumentSnapshot.last as DocumentSnapshot<Map<String, dynamic>>?;
+  //   _chatController.add(listOfDocumentSnapshot);
+  //   print("data = == ");
+  //   // print(data.runtimeType);
+  //   // print(await data.toString()+"----------");
+  //
+  // }
 
-    await _picker.pickImage(source: ImageSource.camera,imageQuality: 60).then((xFile)async {
-      if (xFile != null) {
-        pickedFile = File(xFile.path);
-        pickedFileName = xFile.name.toString();
-        uploadFile("image");
-      }
-    });
+  //image picker from camera logic
+  // Future getImage() async {
+  //   //to get the image from galary
+  //   ImagePicker _picker = ImagePicker();
+  //
+  //   await _picker.pickImage(source: ImageSource.camera,imageQuality: 60).then((xFile)async {
+  //     if (xFile != null) {
+  //       pickedFile = File(xFile.path);
+  //       pickedFileName = xFile.name.toString();
+  //       uploadFile("image");
+  //     }
+  //   });
+  // }
+
+  Future getImage(BuildContext context, type) async {
+
+    FilePickerResult? result;
+
+    try{
+      result = await FilePicker.platform.pickFiles(type: FileType.any);
+    } catch(e) {
+      print(e.toString());
+    }
+    if (result != null && result.files.isNotEmpty) {
+      try {
+
+        final uploadFile = result.files.single.bytes;
+        uploadedFile = uploadFile;
+        final String filepath = path.basename(uploadFile.toString());
+        pickedFileName = result.names[0].toString();
+
+        var sentData = await FirebaseFirestore.instance.collection("groups").doc(widget.groupData!.id)
+            .collection("chats")
+            .add({
+          "link": "",
+          "message": pickedFileName,
+          "sendBy": widget.userData["name"],
+          "time": FieldValue.serverTimestamp(),
+          "type": "image",
+        });
+
+        var storageRef = FirebaseStorage.instance.ref().child('test_developer').child(pickedFileName.toString()!);
+
+        await filterMentorStudentNotification(filepath);
+
+        final UploadTask uploadTask = storageRef.putData(uploadFile!);
+
+        final TaskSnapshot downloadUrl = await uploadTask;
+        final String attachUrl = (await downloadUrl.ref.getDownloadURL());
+
+
+        await sentData.update({"link": attachUrl});
+
+      }catch(e){
+
+        Fluttertoast.showToast(msg: e.toString());
+        print(e.toString());}
+    }
+
+
   }
 
   //file picker logic
-  Future getFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-    if (result != null) {
-      File a = File(result.files.single.path.toString());
-      pickedFile = a;
-      pickedFileName = result.names[0].toString();
-      uploadFile("file");
-    }
-  }
+  // Future getFile() async {
+  //   FilePickerResult? result = await FilePicker.platform.pickFiles();
+  //   if (result != null) {
+  //     File a = File(result.files.single.path.toString());
+  //     pickedFile = a;
+  //     pickedFileName = result.names[0].toString();
+  //     uploadFile("file");
+  //   }
+  // }
 
   //storing file/image to firestore database
   Future uploadFile(type) async {
@@ -307,7 +396,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
       String fileUrl = await uploadTask.ref.getDownloadURL();
 
-      await sentData.update({"link": fileUrl,});
+      await sentData.update({"link": fileUrl});
+
+
 
     } catch (e) {
       Fluttertoast.showToast(msg: e.toString());
@@ -419,15 +510,15 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   //getting path to app's internal storage
-  Future getStoragePath() async {
-    var s;
-    if (await Permission.storage.request().isGranted) {
-      s = await getExternalStorageDirectory();
-    }
-    setState(() {
-      appStorage = s;
-    });
-  }
+  // Future getStoragePath() async {
+  //   var s;
+  //   if (await Permission.storage.request().isGranted) {
+  //     s = await getExternalStorageDirectory();
+  //   }
+  //   setState(() {
+  //     appStorage = s;
+  //   });
+  // }
 
   // void showTags() {
   //   _message.text;
@@ -467,7 +558,6 @@ class _ChatScreenState extends State<ChatScreen> {
     RemoveNotificationChatScreen();
     print("GroupData = ${widget.groupData["student_id"]}");
     print("USerData =  ${widget.userData["id"]}");
-    getStoragePath();
     _scrollController.addListener(() {
       if (_scrollController.offset >=
           (_scrollController.position.maxScrollExtent) &&
@@ -508,18 +598,18 @@ class _ChatScreenState extends State<ChatScreen> {
   async{
     var dataValues = await myBox.values;
     for( var i in dataValues)
-      {
-        try{
-          if(i["DocumentId"].toString()==widget.groupId.toString())
-          {
-           await removeNotification(i["ID"]);
-          }
-        }
-        catch(err)
     {
-      print(err);
-    }
+      try{
+        if(i["DocumentId"].toString()==widget.groupId.toString())
+        {
+          await removeNotification(i["ID"]);
+        }
       }
+      catch(err)
+      {
+        print(err);
+      }
+    }
   }
 
   List? groupsList;
@@ -561,32 +651,32 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Map? userData = {};
 
-removeNotification(ID)
-async{
-  await _flutterLocalNotificationsPlugin.cancel(ID);
-  await myBox.delete(ID);
-}
+  removeNotification(ID)
+  async{
+    await _flutterLocalNotificationsPlugin.cancel(ID);
+    await myBox.delete(ID);
+  }
 
 
-filterMentorStudentNotification(message)
-async{
-   var mentorList = widget.groupData["mentors"];
-   print(mentorList);
+  filterMentorStudentNotification(message)
+  async{
+    var mentorList = widget.groupData["mentors"];
+    print(mentorList);
 
-   if(widget.userData["role"]=="mentor")
-     {
-       mentorList.remove(widget.userData["id"]);
-       mentorList.add(widget.groupData["student_id"]);
-     }
-   await sendNotification(mentorList,message);
-}
+    if(widget.userData["role"]=="mentor")
+    {
+      mentorList.remove(widget.userData["id"]);
+      mentorList.add(widget.groupData["student_id"]);
+    }
+    await sendNotification(mentorList,message);
+  }
 
-sendNotification(List listOfDocumentUsers,message)
-async{
-  for(var documentId in listOfDocumentUsers)
+  sendNotification(List listOfDocumentUsers,message)
+  async{
+    for(var documentId in listOfDocumentUsers)
     {
       await FirebaseFirestore.instance.collection("Users").doc(documentId).get().then(
-        (value) async{
+            (value) async{
           try{
             const SERVER_API_KEY = "AAAAD5zkKfo:APA91bE5z1j6YGz8xZEAHqAaqI8YNE6lZ6oIEfa8ojnp-bk-Ai2dixXDZ1IgZF-VaKsjQ_3MDFSug0hC9MlyIyXJIUP21mCFlFg8wuSqtBzRtEN9mzALmEN0f0eJGn9xWsISMt_W88pR";
             // print("value = ${value["token"]}");
@@ -610,11 +700,11 @@ async{
             http.StreamedResponse response = await request.send();
             if (response.statusCode == 200) {
               print(await response.stream.bytesToString());
-          }
-          else {
-          print(response.reasonPhrase);
-          }
-          print("Send");
+            }
+            else {
+              print(response.reasonPhrase);
+            }
+            print("Send");
           }
           catch(err)
           {
@@ -623,7 +713,7 @@ async{
         },
       );
     }
-}
+  }
 
 
 
@@ -965,7 +1055,7 @@ async{
           //   )
           // ],
         ),
-        body: appStorage == null
+        body: appStorage != null
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
           reverse: true,
@@ -982,8 +1072,13 @@ async{
                       fit: BoxFit.cover),
                 ),
                 child: StreamBuilder<List<DocumentSnapshot>>(
+
                   stream: listenToChatsRealTime(),
                   builder: (context, snapshot) {
+                    if (snapshot.data![0]["type"] == "image") {
+                      print("link is here: ${snapshot.data![0]["link"]}");
+                    }
+
                     if (snapshot.connectionState ==
                         ConnectionState.waiting ||
                         snapshot.connectionState == ConnectionState.none) {
@@ -1269,27 +1364,11 @@ async{
                                 decoration: InputDecoration(
                                   contentPadding: EdgeInsets.fromLTRB(10, 4, 0, 5),
                                   // all(4),
-                                  suffixIcon: Container(
-                                    width: width * 0.23,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        SizedBox(
-                                          width: 27,
-                                          child: IconButton(
-                                            onPressed: () => getFile(),
-                                            icon: const Icon(
-                                              Icons.attach_file,
-                                              color: Color(0xFF7860DC),
-                                            ),
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.photo),
-                                          onPressed: () => getImage(),
-                                          color: Color(0xFF7860DC),
-                                        ),
-                                      ],
+                                  suffixIcon: IconButton(
+                                    onPressed: () => getImage(context, 'image'),
+                                    icon: const Icon(
+                                      Icons.attach_file,
+                                      color: Color(0xFF7860DC),
                                     ),
                                   ),
                                   fillColor: const Color.fromARGB(255, 119, 5, 181),
