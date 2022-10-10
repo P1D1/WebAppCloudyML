@@ -18,12 +18,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:hive/hive.dart';
 
 
 
 
-//Recieve message when app is in background ...solution for on message
+//Receive message when app is in background ...solution for on message
 Future<void> backgroundHandler(RemoteMessage message) async {
   // print("backgroundMessage=======================");
   // print(message.data.toString());
@@ -80,6 +79,7 @@ Future<void> main() async {
 
   FirebaseMessaging.onBackgroundMessage(backgroundHandler);
   LocalNotificationService.initialize();
+
   runApp(MaterialApp(debugShowCheckedModeBanner: false, home: MyApp()));
 
   SystemChrome.setSystemUIOverlayStyle(

@@ -173,7 +173,7 @@ class _ComboCourseState extends State<ComboCourse> {
                                           builder: (context) => VideoScreen(
                                             courseName:
                                                 course[index].courseName,
-                                            isdemo: null,
+                                            isDemo: null,
                                             sr: null,
                                           ),
                                         ),

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudyml_app2/models/firebase_file.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
 
 class ImagePage extends StatelessWidget {
   final FirebaseFile file;
@@ -13,6 +14,7 @@ class ImagePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isImage = ['.jpeg', '.jpg', '.png'].any(file.name.contains);
+    final isPdf = ['.pdf'].any(file.name.contains);
     final size = MediaQuery.of(context).size;
     final height = size.height;
     final width = size.width;
@@ -43,19 +45,20 @@ class ImagePage extends StatelessWidget {
               },
               child: CachedNetworkImage(
                 imageUrl: file.url,
-                placeholder: (context, url) => CircularProgressIndicator(),
+                progressIndicatorBuilder: (context, url, downloadProgress) =>
+                    CircularProgressIndicator(value: downloadProgress.progress),
                 errorWidget: (context, url, error) => Icon(Icons.error),
                 height: height,
                 width: width,
                 // fit: BoxFit.cover,
               ),
             )
-          : Center(
-              child: Text(
-                'Cannot be displayed',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
+              : Center(
+                  child: Text(
+                    'Cannot be displayed',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
     );
   }
 }

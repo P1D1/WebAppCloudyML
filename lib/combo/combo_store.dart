@@ -73,6 +73,7 @@ class _ComboStoreState extends State<ComboStore> with CouponCodeMixin {
         coursePrice = value.data()!['Course Price'];
         name = value.data()!['name'];
         print('ufbufb--$name');
+        print("this is -- $courseId");
       });
     });
   }
