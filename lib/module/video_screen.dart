@@ -267,7 +267,8 @@ class _VideoScreenState extends State<VideoScreen> {
   void dispose() {
     super.dispose();
     AutoOrientation.portraitUpMode();
-    _disposed = true;
+    _disposed = true; 
+    
     _videoController!.dispose();
     _videoController = null;
   }

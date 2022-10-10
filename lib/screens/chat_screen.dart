@@ -91,6 +91,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Stream<List<DocumentSnapshot>> listenToChatsRealTime() {
     _getChats();
+    
     return _chatController.stream;
   }
 
