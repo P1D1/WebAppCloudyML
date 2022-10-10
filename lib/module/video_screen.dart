@@ -408,6 +408,7 @@ class _VideoScreenState extends State<VideoScreen> {
               },
               child: Icon(
                 Icons.arrow_back_ios_new,
+
                 color: Colors.white,
               ),
             ),
