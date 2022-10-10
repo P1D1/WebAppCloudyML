@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloudyml_app2/Providers/chat_screen_provider.dart';
 import 'package:cloudyml_app2/fun.dart';
-import 'package:cloudyml_app2/screens/group_info.dart';
-import 'package:cloudyml_app2/screens/groups_list.dart';
+import 'package:cloudyml_app2/helpers/file_handler.dart';
 import 'package:cloudyml_app2/widgets/audio_msg_tile.dart';
 import 'package:cloudyml_app2/widgets/bottom_sheet.dart';
 import 'package:cloudyml_app2/widgets/file_msg_tile.dart';
@@ -15,23 +13,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
-import "package:image_picker/image_picker.dart";
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:record/record.dart';
-import 'package:badges/badges.dart';
 import 'package:lottie/lottie.dart';
-import '../StreamController/StreamControllers.dart';
-import '../widgets/assignment_bottomsheet.dart';
-import '../Services/local_notificationservice.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/screens/groups_list.dart';
@@ -40,9 +33,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-
 class ChatScreen extends StatefulWidget {
-
   // const ChatScreen({Key? key, this.groupData, this.userData}) : super(key:key);
   final groupData;
   final userData;
@@ -53,7 +44,7 @@ class ChatScreen extends StatefulWidget {
     this.groupData,
     this.groupId,
     this.userData,
-  }):super(key:key);
+  }) : super(key: key);
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -62,26 +53,31 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
 //....................VARIABLES.................................
 
+  List<DocumentSnapshot> listOfDocumentSnapshot = [];
+
+  DocumentSnapshot<Map<String, dynamic>>? _lastDocument1;
+
   DocumentSnapshot<Map<String, dynamic>>? _lastDocument;
   TextEditingController _message = TextEditingController();
 
-  FirebaseAuth _auth = FirebaseAuth.instance;
+  // FirebaseAuth _auth = FirebaseAuth.instance;
 
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   File? pickedFile;
 
+  Uint8List? uploadedFile;
+
   String? pickedFileName;
 
   Directory? appStorage;
-
 
   int count = 0;
 
   ScrollController _scrollController = ScrollController();
 
   final StreamController<List<DocumentSnapshot>> _chatController =
-  StreamController<List<DocumentSnapshot>>.broadcast();
+      StreamController<List<DocumentSnapshot>>.broadcast();
 
   List<List<DocumentSnapshot>> _allPagedResults = [<DocumentSnapshot>[]];
 
@@ -154,7 +150,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   ///This method returns widget that represents list of tags to choose from
   Widget buildTags(BuildContext context, double height, double width) {
-    final provider = Provider.of<ChatScreenNotifier>(context,listen: false);
+    final provider = Provider.of<ChatScreenNotifier>(context, listen: false);
     return Container(
       height: height * 0.25,
       width: width * 0.8,
@@ -220,7 +216,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     var currentRequestIndex = _allPagedResults.length;
     pageChatQuery.snapshots().listen(
-          (snapshot) {
+      (snapshot) {
         if (snapshot.docs.isNotEmpty) {
           var generalChats = snapshot.docs.toList();
           var pageExists = currentRequestIndex < _allPagedResults.length;
@@ -233,7 +229,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
           var allChats = _allPagedResults.fold<List<DocumentSnapshot>>(
               <DocumentSnapshot>[],
-                  (initialValue, pageItems) => initialValue..addAll(pageItems));
+              (initialValue, pageItems) => initialValue..addAll(pageItems));
 
           _chatController.add(allChats);
 
@@ -247,19 +243,97 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  //image picker from camera logic
-  Future getImage() async {
-    //to get the image from galary
-    ImagePicker _picker = ImagePicker();
+  // _getChats()
+  // async{
+  //   if(_lastDocument1!=null)
+  //   {
+  //     await  FirebaseFirestore.instance
+  //         .collection("groups")
+  //         .doc(widget.groupData!.id)
+  //         .collection("chats")
+  //         .orderBy("time", descending: true).startAfterDocument(_lastDocument1!).limit(chatLimit).get().then((value) {
+  //       print("Value ==== ${value.docs.first}");
+  //       for(var i in value.docs)
+  //       {
+  //         listOfDocumentSnapshot.add(i);
+  //       }
+  //       print(listOfDocumentSnapshot);
+  //     });
+  //   }
+  //   else
+  //   {
+  //     await  FirebaseFirestore.instance
+  //         .collection("groups")
+  //         .doc(widget.groupData!.id)
+  //         .collection("chats")
+  //     // .startAfterDocument(_lastDocument1!)
+  //         .orderBy("time", descending: true).limit(chatLimit).get().then((value) {
+  //       print("Value ==== ${value.docs.first}");
+  //       for(var i in value.docs)
+  //       {
+  //         listOfDocumentSnapshot.add(i);
+  //       }
+  //       print(listOfDocumentSnapshot);
+  //     });
+  //   }
+  //
+  //   _lastDocument1 = listOfDocumentSnapshot.last as DocumentSnapshot<Map<String, dynamic>>?;
+  //   _chatController.add(listOfDocumentSnapshot);
+  //   print("data = == ");
+  //   // print(data.runtimeType);
+  //   // print(await data.toString()+"----------");
+  //
+  // }
 
-    await _picker.pickImage(source: ImageSource.camera,imageQuality: 60).then((xFile)async {
-      if (xFile != null) {
-        pickedFile = File(xFile.path);
-        pickedFileName = xFile.name.toString();
-        uploadFile("image");
+
+  Future getImage(BuildContext context, type) async {
+    FilePickerResult? result;
+
+    try {
+      result = await FilePicker.platform.pickFiles(
+          type: FileType.any);
+    } catch (e) {
+      print(e.toString());
+    }
+    if (result != null && result.files.isNotEmpty) {
+      try {
+        final uploadFile = result.files.single.bytes;
+        uploadedFile = uploadFile;
+        final String filepath = path.basename(uploadFile.toString());
+        pickedFileName = result.names[0].toString();
+
+        var sentData = await FirebaseFirestore.instance
+            .collection("groups")
+            .doc(widget.groupData!.id)
+            .collection("chats")
+            .add({
+          "link": "",
+          "message": pickedFileName,
+          "sendBy": widget.userData["name"],
+          "time": FieldValue.serverTimestamp(),
+          "type": "image",
+        });
+
+        var storageRef = FirebaseStorage.instance
+            .ref()
+            .child('test_developer')
+            .child(pickedFileName.toString());
+
+        await filterMentorStudentNotification(filepath);
+
+        final UploadTask uploadTask = storageRef.putData(uploadFile!);
+
+        final TaskSnapshot downloadUrl = await uploadTask;
+        final String attachUrl = (await downloadUrl.ref.getDownloadURL());
+
+        await sentData.update({"link": attachUrl});
+      } catch (e) {
+        Fluttertoast.showToast(msg: e.toString());
+        print(e.toString());
       }
-    });
+    }
   }
+
 
   //file picker logic
   Future getFile() async {
@@ -268,6 +342,7 @@ class _ChatScreenState extends State<ChatScreen> {
       File a = File(result.files.single.path.toString());
       pickedFile = a;
       pickedFileName = result.names[0].toString();
+
       uploadFile("file");
     }
   }
@@ -287,16 +362,16 @@ class _ChatScreenState extends State<ChatScreen> {
         "type": type == "image"
             ? "image"
             : type == "audio"
-            ? "audio"
-            : "file",
+                ? "audio"
+                : "file",
       });
       var ref = FirebaseStorage.instance
           .ref()
           .child(type == "image"
-          ? "images"
-          : type == "audio"
-          ? "aduios"
-          : "files")
+              ? "images"
+              : type == "audio"
+                  ? "aduios"
+                  : "files")
           .child(pickedFileName!);
       //To bring latest msg on top
       // await _firestore.collection('groups').doc(widget.groupData!["id"]).update(
@@ -308,8 +383,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       String fileUrl = await uploadTask.ref.getDownloadURL();
 
-      await sentData.update({"link": fileUrl,});
-
+      await sentData.update({"link": fileUrl});
     } catch (e) {
       Fluttertoast.showToast(msg: e.toString());
     }
@@ -317,7 +391,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   //storing message to firestore database
   void onSendMessage() async {
-
     var messages = _message.text;
     _message.clear();
     //to send the text to server
@@ -336,9 +409,10 @@ class _ChatScreenState extends State<ChatScreen> {
           .collection("chats")
           .add(message);
       print("GroupId = ${widget.groupId}");
-      await _firestore.collection("groups").doc(widget.groupId).update(
-          {"time":FieldValue.serverTimestamp()}
-      );
+      await _firestore
+          .collection("groups")
+          .doc(widget.groupId)
+          .update({"time": FieldValue.serverTimestamp()});
       print('count is-------$count');
 
       // await stream();
@@ -420,15 +494,15 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   //getting path to app's internal storage
-  Future getStoragePath() async {
-    var s;
-    if (await Permission.storage.request().isGranted) {
-      s = await getExternalStorageDirectory();
-    }
-    setState(() {
-      appStorage = s;
-    });
-  }
+  // Future getStoragePath() async {
+  //   var s;
+  //   if (await Permission.storage.request().isGranted) {
+  //     s = await getExternalStorageDirectory();
+  //   }
+  //   setState(() {
+  //     appStorage = s;
+  //   });
+  // }
 
   // void showTags() {
   //   _message.text;
@@ -449,7 +523,7 @@ class _ChatScreenState extends State<ChatScreen> {
   // }
 
   static final FlutterLocalNotificationsPlugin
-  _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+      _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   bool removeNotificationOnChatScreenOn = false;
   final myBox = Hive.box('myBox');
   @override
@@ -468,10 +542,9 @@ class _ChatScreenState extends State<ChatScreen> {
     RemoveNotificationChatScreen();
     print("GroupData = ${widget.groupData["student_id"]}");
     print("USerData =  ${widget.userData["id"]}");
-    getStoragePath();
     _scrollController.addListener(() {
       if (_scrollController.offset >=
-          (_scrollController.position.maxScrollExtent) &&
+              (_scrollController.position.maxScrollExtent) &&
           !_scrollController.position.outOfRange) {
         _getChats();
       }
@@ -485,42 +558,33 @@ class _ChatScreenState extends State<ChatScreen> {
     //     }
     // });
 
-
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) async{
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       print("MEssageChat screen");
       print(widget.groupData!["name"]);
     });
 
-
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print("Navigation");
-      if(message.notification!.body!=null)
-      {
+      if (message.notification!.body != null) {
         print("Navigation");
         Navigator.pop(context);
       }
     });
 
-
     super.initState();
   }
 
-  RemoveNotificationChatScreen()
-  async{
+  RemoveNotificationChatScreen() async {
     var dataValues = await myBox.values;
-    for( var i in dataValues)
-      {
-        try{
-          if(i["DocumentId"].toString()==widget.groupId.toString())
-          {
-           await removeNotification(i["ID"]);
-          }
+    for (var i in dataValues) {
+      try {
+        if (i["DocumentId"].toString() == widget.groupId.toString()) {
+          await removeNotification(i["ID"]);
         }
-        catch(err)
-    {
-      print(err);
-    }
+      } catch (err) {
+        print(err);
       }
+    }
   }
 
   List? groupsList;
@@ -562,71 +626,66 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Map? userData = {};
 
-removeNotification(ID)
-async{
-  await _flutterLocalNotificationsPlugin.cancel(ID);
-  await myBox.delete(ID);
-}
+  removeNotification(ID) async {
+    await _flutterLocalNotificationsPlugin.cancel(ID);
+    await myBox.delete(ID);
+  }
 
+  filterMentorStudentNotification(message) async {
+    var mentorList = widget.groupData["mentors"];
+    print(mentorList);
 
-filterMentorStudentNotification(message)
-async{
-   var mentorList = widget.groupData["mentors"];
-   print(mentorList);
+    if (widget.userData["role"] == "mentor") {
+      mentorList.remove(widget.userData["id"]);
+      mentorList.add(widget.groupData["student_id"]);
+    }
+    await sendNotification(mentorList, message);
+  }
 
-   if(widget.userData["role"]=="mentor")
-     {
-       mentorList.remove(widget.userData["id"]);
-       mentorList.add(widget.groupData["student_id"]);
-     }
-   await sendNotification(mentorList,message);
-}
-
-sendNotification(List listOfDocumentUsers,message)
-async{
-  for(var documentId in listOfDocumentUsers)
-    {
-      await FirebaseFirestore.instance.collection("Users").doc(documentId).get().then(
-        (value) async{
-          try{
-            const SERVER_API_KEY = "AAAAD5zkKfo:APA91bE5z1j6YGz8xZEAHqAaqI8YNE6lZ6oIEfa8ojnp-bk-Ai2dixXDZ1IgZF-VaKsjQ_3MDFSug0hC9MlyIyXJIUP21mCFlFg8wuSqtBzRtEN9mzALmEN0f0eJGn9xWsISMt_W88pR";
+  sendNotification(List listOfDocumentUsers, message) async {
+    for (var documentId in listOfDocumentUsers) {
+      await FirebaseFirestore.instance
+          .collection("Users")
+          .doc(documentId)
+          .get()
+          .then(
+        (value) async {
+          try {
+            const SERVER_API_KEY =
+                "AAAAD5zkKfo:APA91bE5z1j6YGz8xZEAHqAaqI8YNE6lZ6oIEfa8ojnp-bk-Ai2dixXDZ1IgZF-VaKsjQ_3MDFSug0hC9MlyIyXJIUP21mCFlFg8wuSqtBzRtEN9mzALmEN0f0eJGn9xWsISMt_W88pR";
             // print("value = ${value["token"]}");
             var headers = {
               'Authorization': 'key=$SERVER_API_KEY',
               'Content-Type': 'application/json'
             };
-            var request = await http.Request('POST', Uri.parse('https://fcm.googleapis.com/fcm/send'));
+            var request = await http.Request(
+                'POST', Uri.parse('https://fcm.googleapis.com/fcm/send'));
             request.body = json.encode({
               "to": value["token"],
               "notification": {
                 "body": message,
                 "title": widget.userData["name"]
               },
-              "data":{
-                "DocumentId":widget.groupId.toString(),
-                "SenderId":FirebaseAuth.instance.currentUser!.uid.toString()
+              "data": {
+                "DocumentId": widget.groupId.toString(),
+                "SenderId": FirebaseAuth.instance.currentUser!.uid.toString()
               }
             });
             request.headers.addAll(headers);
             http.StreamedResponse response = await request.send();
             if (response.statusCode == 200) {
               print(await response.stream.bytesToString());
-          }
-          else {
-          print(response.reasonPhrase);
-          }
-          print("Send");
-          }
-          catch(err)
-          {
+            } else {
+              print(response.reasonPhrase);
+            }
+            print("Send");
+          } catch (err) {
             print("Error");
           }
         },
       );
     }
-}
-
-
+  }
 
   // sendNotification(message,senderId)
   // async{
@@ -683,7 +742,6 @@ async{
   //   print("listinstance+++++++++++++++++++${listInstance}");
   //   await sendNotificationToAllMentors(listInstance, responseData, list, message, senderId,true);
   // }
-
 
   // sendNotificationToAllMentors(listInstance,responseData,listOfTokenId,message,senderId,expression)
   // async{
@@ -776,10 +834,9 @@ async{
   //   }
   // }
 
-  String reverseString(String str)
-  {
-
-    const listOfMonths = ['January',
+  String reverseString(String str) {
+    const listOfMonths = [
+      'January',
       'February',
       'March',
       'April',
@@ -790,42 +847,39 @@ async{
       'September',
       'October',
       'November',
-      'December'];
+      'December'
+    ];
     String reverseString = "";
     List list = [];
-    for(int i=0;i<str.length;i++)
-    {
-
-      if(str[i]=="-" || i==str.length-1)
-      {
-        i==str.length-1?reverseString+=str[i]:null;
+    for (int i = 0; i < str.length; i++) {
+      if (str[i] == "-" || i == str.length - 1) {
+        i == str.length - 1 ? reverseString += str[i] : null;
         list.add(reverseString);
         reverseString = "";
-      }
-      else{
-        reverseString+=str[i];
+      } else {
+        reverseString += str[i];
       }
     }
 
     reverseString = "";
-    reverseString = list[2]+" "+listOfMonths[int.parse(list[1])-1]+" "+list[0];
+    reverseString =
+        list[2] + " " + listOfMonths[int.parse(list[1]) - 1] + " " + list[0];
     return reverseString;
   }
 
-  Widget showDateInChatScreen(String dateString)
-  {
+  Widget showDateInChatScreen(String dateString) {
     return Center(
-        child:Container(
-          margin: EdgeInsets.only(top: 5,bottom: 3),
-          padding: EdgeInsets.all(8),
-          decoration: BoxDecoration(
-              color: Color(0xFF7860DC),
-              borderRadius: BorderRadius.circular(20)
-          ),
-          child:
-          Text("$dateString",style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.white),),
-        )
-    );
+        child: Container(
+      margin: EdgeInsets.only(top: 5, bottom: 3),
+      padding: EdgeInsets.all(8),
+      decoration: BoxDecoration(
+          color: Color(0xFF7860DC), borderRadius: BorderRadius.circular(20)),
+      child: Text(
+        "$dateString",
+        style: TextStyle(
+            fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+      ),
+    ));
   }
 
   // sendAPI(list,message,senderId)
@@ -866,18 +920,19 @@ async{
 
   @override
   Widget build(BuildContext context) {
-    final providerChatScreenNotifier = Provider.of<ChatScreenNotifier>(context,listen: false);
+    final providerChatScreenNotifier =
+        Provider.of<ChatScreenNotifier>(context, listen: false);
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
     final size = MediaQuery.of(context).size;
     print("user name is ${widget.userData}");
     print("USer = ${widget.groupData.id}");
-    return WillPopScope( onWillPop: ()async{
-      removeNotificationOnChatScreenOn = false;
-      Navigator.of(context).pop();
-      return false;
-
-    },
+    return WillPopScope(
+      onWillPop: () async {
+        removeNotificationOnChatScreenOn = false;
+        Navigator.of(context).pop();
+        return false;
+      },
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -910,7 +965,7 @@ async{
                 CircleAvatar(
                   radius: 22,
                   backgroundImage:
-                  CachedNetworkImageProvider(widget.groupData!["icon"]),
+                      CachedNetworkImageProvider(widget.groupData!["icon"]),
                 ),
                 Container(
                   padding: const EdgeInsets.all(10),
@@ -966,409 +1021,431 @@ async{
           //   )
           // ],
         ),
-        body: appStorage == null
+        body: appStorage != null
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-          reverse: true,
-          child: Column(
-            children: [
-              //Chats container
-              Container(
-                height: size.height / 1.33,
-                width: size.width,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage('assets/g8.png'),
-                      opacity: 0.16,
-                      fit: BoxFit.cover),
-                ),
-                child: StreamBuilder<List<DocumentSnapshot>>(
-                  stream: listenToChatsRealTime(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState ==
-                        ConnectionState.waiting ||
-                        snapshot.connectionState == ConnectionState.none) {
-                      return snapshot.hasData
-                          ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
-                          : Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                              padding:
-                              EdgeInsets.fromLTRB(5, 5, 5, 5),
-                              decoration: BoxDecoration(
-                                color: Colors.transparent,
+                reverse: true,
+                child: Column(
+                  children: [
+                    //Chats container
+                    Container(
+                      height: size.height / 1.33,
+                      width: size.width,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage('assets/g8.png'),
+                            opacity: 0.16,
+                            fit: BoxFit.cover),
+                      ),
+                      child: StreamBuilder<List<DocumentSnapshot>>(
+                        stream: listenToChatsRealTime(),
+                        builder: (context, snapshot) {
+                          if (snapshot.data![0]["type"] == "image") {
+                            print("link is here: ${snapshot.data![0]["link"]}");
+                          }
 
-                                //DecorationImage
-                                // border: Border.all(
-                                //   // color: Colors.green,
-                                //   width: 8,
-                                // ), //Border.all
-                                borderRadius:
-                                BorderRadius.circular(10),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey,
-                                    offset: const Offset(
-                                      1.0,
-                                      1.0,
-                                    ), //Offset
-                                    blurRadius: 2.0,
-                                    spreadRadius: 2.0,
-                                  ), //BoxShadow
-                                  BoxShadow(
-                                    color: Color.fromARGB(
-                                        255, 255, 255, 255),
-                                    offset: const Offset(0.0, 0.0),
-                                    blurRadius: 0.0,
-                                    spreadRadius: 0.0,
-                                  ), //BoxShadow
-                                ],
-                              ),
-                              margin:
-                              EdgeInsets.fromLTRB(25, 0, 25, 0),
-                              child: chat()
-                            //  Text(
-                            // 'You can ask assignment related doubts here 6pm- midnight.(Indian standard time)\nour mentors:-\n6:00pm-7:30pm - Rahul\n7:30pm-midnight - Harsh'),
-                          )
-                          // Center(
-                          //     child: Text("Start a Conversation."),
-                          //   ),
-                        ],
-                      );
-                    } else {
-                      if (snapshot.data != null) {
-
-                        print("MessageDataa = = ${snapshot.data}");
-
-                        return Stack(
-                          children: [
-                            ListView.builder(
-                              reverse: true,
-                              controller: _scrollController,
-                              itemCount: snapshot.data!.length,
-                              itemBuilder: (context, index) {
-
-                                print("currentTag = ${currentTag.toString()}");
-                                Map<String, dynamic> map =
-                                // messageData =
-                                snapshot.data![index].data()
-                                as Map<String, dynamic>;
-
-                                return Column(
-                                  children: [
-
-                                    index!=snapshot.data!.length-1?
-                                    snapshot.data![index]["time"].toDate().toString().substring(0,10)!=
-                                        snapshot.data![index+1]["time"].toDate().toString().substring(0,10)?
-                                    snapshot.data![index]["time"].toDate().toString().substring(0,10)==
-                                        DateTime.now().subtract(Duration(days: 1)).toString().substring(0,10)?
-                                    showDateInChatScreen("yesterday"):
-                                    snapshot.data![index]["time"].toDate().toString().substring(0,10)==
-                                        DateTime.now().toString().substring(0,10)?
-                                    showDateInChatScreen("today"):
-                                    showDateInChatScreen(reverseString(snapshot.data![index]["time"].toDate().toString().substring(0,10))):SizedBox():
-                                    snapshot.data![index]["time"].toDate().toString().substring(0,10)==
-                                        DateTime.now().subtract(Duration(days: 1)).toString().substring(0,10)?
-                                    showDateInChatScreen("yesterday"):
-                                    snapshot.data![index]["time"].toDate().toString().substring(0,10)==
-                                        DateTime.now().toString().substring(0,10)?
-                                    showDateInChatScreen("today"):showDateInChatScreen(reverseString(snapshot.data![index]["time"].toDate().toString().substring(0,10))),
-                                    messages(
-                                      size,
-                                      map,
-                                      context,
-                                      appStorage,
-                                      currentTag,
-                                    )
-                                  ],
-                                );
-                              },
-                            ),
-                            // shouldShowTags
-                            //     ? Positioned(
-                            //   bottom: 0,
-                            //   child: FutureBuilder(
-                            //     future: addTagProperties(),
-                            //     builder: ((context, snapshot) {
-                            //       if (ConnectionState.done ==
-                            //           snapshot.connectionState) {
-                            //         return buildTags(
-                            //           context,
-                            //           height,
-                            //           width,
-                            //         );
-                            //       } else {
-                            //         return Container(
-                            //           height: height * 0.25,
-                            //           width: width * 0.8,
-                            //           decoration: BoxDecoration(
-                            //             color: Colors.white,
-                            //             borderRadius:
-                            //             BorderRadius.only(
-                            //               topLeft:
-                            //               Radius.circular(20),
-                            //               topRight:
-                            //               Radius.circular(20),
-                            //             ),
-                            //             border: Border.all(
-                            //               color: Colors.grey,
-                            //               width: 0.1,
-                            //             ),
-                            //           ),
-                            //           child: Padding(
-                            //             padding:
-                            //             const EdgeInsets.all(20),
-                            //             child: ClipRRect(
-                            //               borderRadius:
-                            //               BorderRadius.circular(
-                            //                   20),
-                            //               child: Lottie.asset(
-                            //                   'assets/load-shimmer.json',
-                            //                   fit: BoxFit.fill),
-                            //             ),
-                            //           ),
-                            //         );
-                            //       }
-                            //     }),
-                            //   ),
-                            // )
-                            //     : Container(),
-
-
-
-                            // Positioned(
-                            //   bottom: 0,
-                            //   left: 0,
-                            //   right: 0,
-                            //   child: selectTags(context),
-                            // )
-
-                            Consumer<ChatScreenNotifier>(builder: (context,data,child){
-                              return data.ShouldShowTags && data.text!=""
-                                  ? Positioned(
-                                bottom: 0,
-                                child: FutureBuilder(
-                                  future: addTagProperties(),
-                                  builder: ((context, snapshot) {
-                                    if (ConnectionState.done ==
-                                        snapshot.connectionState) {
-                                      return buildTags(
-                                        context,
-                                        height,
-                                        width,
-                                      );
-                                    } else {
-                                      return Container(
-                                        height: height * 0.25,
-                                        width: width * 0.8,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                          BorderRadius.only(
-                                            topLeft:
-                                            Radius.circular(20),
-                                            topRight:
-                                            Radius.circular(20),
-                                          ),
-                                          border: Border.all(
-                                            color: Colors.grey,
-                                            width: 0.1,
-                                          ),
-                                        ),
-                                        child: Padding(
+                          if (snapshot.connectionState ==
+                                  ConnectionState.waiting ||
+                              snapshot.connectionState ==
+                                  ConnectionState.none) {
+                            return snapshot.hasData
+                                ? const Center(
+                                    child: CircularProgressIndicator(),
+                                  )
+                                : Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
                                           padding:
-                                          const EdgeInsets.all(20),
-                                          child: ClipRRect(
-                                            borderRadius:
-                                            BorderRadius.circular(
-                                                20),
-                                            child: Lottie.asset(
-                                                'assets/load-shimmer.json',
-                                                fit: BoxFit.fill),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  }),
-                                ),
-                              )
-                                  : Container();
-                            })
-                          ],
-                        );
-                      } else {
-                        return Container();
-                      }
-                    }
-                  },
-                ),
-              ),
-              //Message Text Field container
-              // Container(
-              //   margin: EdgeInsets.fromLTRB(0, 7, 0, 0),
-              //   height: size.height *.098,
-              //   width: size.width * 1.2,
-              //   alignment: Alignment.bottomCenter,
-              // child:
-              Consumer<ChatScreenNotifier>(
-                builder: (context,data,child){
-                  return Container(
+                                              EdgeInsets.fromLTRB(5, 5, 5, 5),
+                                          decoration: BoxDecoration(
+                                            color: Colors.transparent,
 
-                    alignment: Alignment.bottomCenter,
-                    // height: // size.height* .1,
-                    width: size.width /1.1,
-                    child:
-                    Row(
-                        children: [
-                          Container(
-                            margin:EdgeInsets.fromLTRB(0, 8, 0, 13),
-                            // height: height *.3,
-                            width: size.width / 1.33,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(maxHeight: 120),
-                              child: TextField(
-                                style: TextStyle(fontSize: 16),
-                                // style: TextStyle(
-                                //   color: _message.text.startsWith('@')
-                                //       // &&
-                                //       //         _message.text.endsWith('other')
-                                //       ? Colors.green
-                                //       : Colors.black,
-                                // ),
-                                onChanged: (text) {
-                                  providerChatScreenNotifier.sendTextMessage(text);
-                                  if (text.contains('@') && text.isNotEmpty) {
-                                    // shouldShowTags = true;
-                                    providerChatScreenNotifier.showTags(true);
-                                  } else {
-                                    // shouldShowTags = true;
-                                    providerChatScreenNotifier.showTags(false);
-                                  }
-                                  // setState(() {
-                                  //   if (text.contains('@')) {
-                                  //     shouldShowTags = true;
-                                  //   } else {
-                                  //     shouldShowTags = false;
-                                  //   }
-                                  //   if (text.isNotEmpty) {
-                                  //     textFocusCheck = true;
-                                  //   } else {
-                                  //     textFocusCheck = false;
-                                  //   }
-                                  // });
-                                },
-                                // keyboardType: TextInputType.multiline,
-                                maxLines: null,
-                                controller: _message,
-                                autocorrect: true,
-                                cursorColor: Colors.purple,
-                                textInputAction: TextInputAction.newline,
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.fromLTRB(10, 4, 0, 5),
-                                  // all(4),
-                                  suffixIcon: Container(
-                                    width: width * 0.23,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        SizedBox(
-                                          width: 27,
-                                          child: IconButton(
-                                            onPressed: () => getFile(),
-                                            icon: const Icon(
-                                              Icons.attach_file,
-                                              color: Color(0xFF7860DC),
+                                            //DecorationImage
+                                            // border: Border.all(
+                                            //   // color: Colors.green,
+                                            //   width: 8,
+                                            // ), //Border.all
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey,
+                                                offset: const Offset(
+                                                  1.0,
+                                                  1.0,
+                                                ), //Offset
+                                                blurRadius: 2.0,
+                                                spreadRadius: 2.0,
+                                              ), //BoxShadow
+                                              BoxShadow(
+                                                color: Color.fromARGB(
+                                                    255, 255, 255, 255),
+                                                offset: const Offset(0.0, 0.0),
+                                                blurRadius: 0.0,
+                                                spreadRadius: 0.0,
+                                              ), //BoxShadow
+                                            ],
+                                          ),
+                                          margin:
+                                              EdgeInsets.fromLTRB(25, 0, 25, 0),
+                                          child: chat()
+                                          //  Text(
+                                          // 'You can ask assignment related doubts here 6pm- midnight.(Indian standard time)\nour mentors:-\n6:00pm-7:30pm - Rahul\n7:30pm-midnight - Harsh'),
+                                          )
+                                      // Center(
+                                      //     child: Text("Start a Conversation."),
+                                      //   ),
+                                    ],
+                                  );
+                          } else {
+                            if (snapshot.data != null) {
+                              print("MessageDataa = = ${snapshot.data}");
+
+                              return Stack(
+                                children: [
+                                  ListView.builder(
+                                    reverse: true,
+                                    controller: _scrollController,
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, index) {
+                                      print(
+                                          "currentTag = ${currentTag.toString()}");
+                                      Map<String, dynamic> map =
+                                          // messageData =
+                                          snapshot.data![index].data()
+                                              as Map<String, dynamic>;
+
+                                      return Column(
+                                        children: [
+                                          index != snapshot.data!.length - 1
+                                              ? snapshot.data![index]["time"]
+                                                          .toDate()
+                                                          .toString()
+                                                          .substring(0, 10) !=
+                                                      snapshot.data![index + 1]
+                                                              ["time"]
+                                                          .toDate()
+                                                          .toString()
+                                                          .substring(0, 10)
+                                                  ? snapshot.data![index]["time"]
+                                                              .toDate()
+                                                              .toString()
+                                                              .substring(
+                                                                  0, 10) ==
+                                                          DateTime.now().subtract(Duration(days: 1)).toString().substring(
+                                                              0, 10)
+                                                      ? showDateInChatScreen(
+                                                          "yesterday")
+                                                      : snapshot.data![index]["time"]
+                                                                  .toDate()
+                                                                  .toString()
+                                                                  .substring(
+                                                                      0, 10) ==
+                                                              DateTime.now()
+                                                                  .toString()
+                                                                  .substring(0, 10)
+                                                          ? showDateInChatScreen("today")
+                                                          : showDateInChatScreen(reverseString(snapshot.data![index]["time"].toDate().toString().substring(0, 10)))
+                                                  : SizedBox()
+                                              : snapshot.data![index]["time"].toDate().toString().substring(0, 10) == DateTime.now().subtract(Duration(days: 1)).toString().substring(0, 10)
+                                                  ? showDateInChatScreen("yesterday")
+                                                  : snapshot.data![index]["time"].toDate().toString().substring(0, 10) == DateTime.now().toString().substring(0, 10)
+                                                      ? showDateInChatScreen("today")
+                                                      : showDateInChatScreen(reverseString(snapshot.data![index]["time"].toDate().toString().substring(0, 10))),
+                                          messages(
+                                            size,
+                                            map,
+                                            context,
+                                            appStorage,
+                                            currentTag,
+                                          )
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                  // shouldShowTags
+                                  //     ? Positioned(
+                                  //   bottom: 0,
+                                  //   child: FutureBuilder(
+                                  //     future: addTagProperties(),
+                                  //     builder: ((context, snapshot) {
+                                  //       if (ConnectionState.done ==
+                                  //           snapshot.connectionState) {
+                                  //         return buildTags(
+                                  //           context,
+                                  //           height,
+                                  //           width,
+                                  //         );
+                                  //       } else {
+                                  //         return Container(
+                                  //           height: height * 0.25,
+                                  //           width: width * 0.8,
+                                  //           decoration: BoxDecoration(
+                                  //             color: Colors.white,
+                                  //             borderRadius:
+                                  //             BorderRadius.only(
+                                  //               topLeft:
+                                  //               Radius.circular(20),
+                                  //               topRight:
+                                  //               Radius.circular(20),
+                                  //             ),
+                                  //             border: Border.all(
+                                  //               color: Colors.grey,
+                                  //               width: 0.1,
+                                  //             ),
+                                  //           ),
+                                  //           child: Padding(
+                                  //             padding:
+                                  //             const EdgeInsets.all(20),
+                                  //             child: ClipRRect(
+                                  //               borderRadius:
+                                  //               BorderRadius.circular(
+                                  //                   20),
+                                  //               child: Lottie.asset(
+                                  //                   'assets/load-shimmer.json',
+                                  //                   fit: BoxFit.fill),
+                                  //             ),
+                                  //           ),
+                                  //         );
+                                  //       }
+                                  //     }),
+                                  //   ),
+                                  // )
+                                  //     : Container(),
+
+                                  // Positioned(
+                                  //   bottom: 0,
+                                  //   left: 0,
+                                  //   right: 0,
+                                  //   child: selectTags(context),
+                                  // )
+
+                                  Consumer<ChatScreenNotifier>(
+                                      builder: (context, data, child) {
+                                    return data.ShouldShowTags &&
+                                            data.text != ""
+                                        ? Positioned(
+                                            bottom: 0,
+                                            child: FutureBuilder(
+                                              future: addTagProperties(),
+                                              builder: ((context, snapshot) {
+                                                if (ConnectionState.done ==
+                                                    snapshot.connectionState) {
+                                                  return buildTags(
+                                                    context,
+                                                    height,
+                                                    width,
+                                                  );
+                                                } else {
+                                                  return Container(
+                                                    height: height * 0.25,
+                                                    width: width * 0.8,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.only(
+                                                        topLeft:
+                                                            Radius.circular(20),
+                                                        topRight:
+                                                            Radius.circular(20),
+                                                      ),
+                                                      border: Border.all(
+                                                        color: Colors.grey,
+                                                        width: 0.1,
+                                                      ),
+                                                    ),
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              20),
+                                                      child: ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20),
+                                                        child: Lottie.asset(
+                                                            'assets/load-shimmer.json',
+                                                            fit: BoxFit.fill),
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+                                              }),
                                             ),
+                                          )
+                                        : Container();
+                                  })
+                                ],
+                              );
+                            } else {
+                              return Container();
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                    //Message Text Field container
+                    // Container(
+                    //   margin: EdgeInsets.fromLTRB(0, 7, 0, 0),
+                    //   height: size.height *.098,
+                    //   width: size.width * 1.2,
+                    //   alignment: Alignment.bottomCenter,
+                    // child:
+                    Consumer<ChatScreenNotifier>(
+                      builder: (context, data, child) {
+                        return Container(
+                          alignment: Alignment.bottomCenter,
+                          // height: // size.height* .1,
+                          width: size.width / 1.1,
+                          child: Row(children: [
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 8, 0, 13),
+                              // height: height *.3,
+                              width: size.width / 1.33,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(maxHeight: 120),
+                                child: TextField(
+                                  style: TextStyle(fontSize: 16),
+                                  // style: TextStyle(
+                                  //   color: _message.text.startsWith('@')
+                                  //       // &&
+                                  //       //         _message.text.endsWith('other')
+                                  //       ? Colors.green
+                                  //       : Colors.black,
+                                  // ),
+                                  onChanged: (text) {
+                                    providerChatScreenNotifier
+                                        .sendTextMessage(text);
+                                    if (text.contains('@') && text.isNotEmpty) {
+                                      // shouldShowTags = true;
+                                      providerChatScreenNotifier.showTags(true);
+                                    } else {
+                                      // shouldShowTags = true;
+                                      providerChatScreenNotifier
+                                          .showTags(false);
+                                    }
+                                    // setState(() {
+                                    //   if (text.contains('@')) {
+                                    //     shouldShowTags = true;
+                                    //   } else {
+                                    //     shouldShowTags = false;
+                                    //   }
+                                    //   if (text.isNotEmpty) {
+                                    //     textFocusCheck = true;
+                                    //   } else {
+                                    //     textFocusCheck = false;
+                                    //   }
+                                    // });
+                                  },
+                                  // keyboardType: TextInputType.multiline,
+                                  maxLines: null,
+                                  controller: _message,
+                                  autocorrect: true,
+                                  cursorColor: Colors.purple,
+                                  textInputAction: TextInputAction.newline,
+                                  decoration: InputDecoration(
+                                    contentPadding:
+                                        EdgeInsets.fromLTRB(10, 4, 0, 5),
+                                    // all(4),
+                                    suffixIcon: Row(
+                                      children: [
+                                        IconButton(
+                                          onPressed: () =>
+                                              getImage(context, 'image'),
+                                          icon: const Icon(
+                                            Icons.photo,
+                                            color: Color(0xFF7860DC),
                                           ),
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons.photo),
-                                          onPressed: () => getImage(),
-                                          color: Color(0xFF7860DC),
+                                          onPressed: () =>
+                                              getFile(),
+                                          icon: const Icon(
+                                            Icons.attach_file,
+                                            color: Color(0xFF7860DC),
+                                          ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  fillColor: const Color.fromARGB(255, 119, 5, 181),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                        color: Color.fromARGB(255, 35, 6, 194),
-                                        width: 2.0),
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                  hintText: "Ask Your Doubt...",
-                                  hintStyle: TextStyle(
-
-                                      fontSize: 15.0,
-                                      color: Color.fromARGB(255, 183, 183, 183)),
-                                  border: OutlineInputBorder(
-                                    gapPadding: 0.0,
-                                    borderRadius: BorderRadius.circular(
-                                      (5),
+                                    fillColor:
+                                        const Color.fromARGB(255, 119, 5, 181),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                          color:
+                                              Color.fromARGB(255, 35, 6, 194),
+                                          width: 2.0),
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    hintText: "Ask Your Doubt...",
+                                    hintStyle: TextStyle(
+                                        fontSize: 15.0,
+                                        color:
+                                            Color.fromARGB(255, 183, 183, 183)),
+                                    border: OutlineInputBorder(
+                                      gapPadding: 0.0,
+                                      borderRadius: BorderRadius.circular(
+                                        (5),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Container(
-                            margin: EdgeInsets.fromLTRB(0, 8, 0, 13),
-                            child: Ink(
-                              decoration: ShapeDecoration(
-                                color: Color(0xFF7860DC),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                              ),
-                              child: IconButton(
-                                focusColor: Colors.blue,
-                                splashRadius: 30,
-                                splashColor: Colors.blueGrey,
-                                onPressed: () {
-                                  providerChatScreenNotifier.sendTextMessage("");
-                                  _message.text!=""
-                                      ? onSendMessage()
-                                      : onSendAudioMessage();
-                                  //To bring latest msg on top
-                                  // await _firestore
-                                  //     .collection('groups')
-                                  //     .doc(widget.groupData!.id)
-                                  //     .update({'time': DateTime.now()});
-                                },
-                                icon: Consumer<ChatScreenNotifier>(
-                                  builder: (context,child,value){
-                                    print(child.text);
-                                    return child.text==""
-                                        ? const Icon(Icons.mic)
-                                        : const Icon(Icons.send);
-                                  },
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0, 8, 0, 13),
+                              child: Ink(
+                                decoration: ShapeDecoration(
+                                  color: Color(0xFF7860DC),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
                                 ),
-                                color: Colors.white,
+                                child: IconButton(
+                                  focusColor: Colors.blue,
+                                  splashRadius: 30,
+                                  splashColor: Colors.blueGrey,
+                                  onPressed: () {
+                                    providerChatScreenNotifier
+                                        .sendTextMessage("");
+                                    _message.text != ""
+                                        ? onSendMessage()
+                                        : onSendAudioMessage();
+                                    //To bring latest msg on top
+                                    // await _firestore
+                                    //     .collection('groups')
+                                    //     .doc(widget.groupData!.id)
+                                    //     .update({'time': DateTime.now()});
+                                  },
+                                  icon: Consumer<ChatScreenNotifier>(
+                                    builder: (context, child, value) {
+                                      print(child.text);
+                                      return child.text == ""
+                                          ? const Icon(Icons.mic)
+                                          : const Icon(Icons.send);
+                                    },
+                                  ),
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                          ),
-                        ]),
-
-                  );
-                },
-              )
-              // ),
-            ],
-          ),
-        ),
-      ),);
+                          ]),
+                        );
+                      },
+                    )
+                    // ),
+                  ],
+                ),
+              ),
+      ),
+    );
   }
 
   Widget messages(Size size, Map<String, dynamic> map, BuildContext context,
       Directory? appStorage, String currentTag) {
-
-
     // var list = [];
     // print("Detector---------------------${map["message"][0]}");
     // var link = "";
@@ -1389,32 +1466,28 @@ async{
     // }
     // print("Link----$list");
 
-
-
     //help us to show the text and the image in perfect alignment
     return map['type'] == "text" //checks if our msg is text or image
         ? MessageTile(size, map, widget.userData["name"], currentTag)
         : map["type"] == "image"
-        ? ImageMsgTile(
-        map: map,
-        displayName: widget.userData["name"],
-        appStorage: appStorage)
-        : map["type"] == "audio"
-        ? Container(
-      child: AudioMsgTile(
-        size: size,
-        map: map,
-        displayName: widget.userData["name"],
-        appStorage: appStorage,
-      ),
-    )
-        : FileMsgTile(
-      size: size,
-      map: map,
-      displayName: widget.userData["name"],
-      appStorage: appStorage,
-    );
+            ? ImageMsgTile(
+                map: map,
+                displayName: widget.userData["name"],
+                appStorage: appStorage)
+            : map["type"] == "audio"
+                ? Container(
+                    child: AudioMsgTile(
+                      size: size,
+                      map: map,
+                      displayName: widget.userData["name"],
+                      appStorage: appStorage,
+                    ),
+                  )
+                : FileMsgTile(
+                    size: size,
+                    map: map,
+                    displayName: widget.userData["name"],
+                    appStorage: appStorage,
+                  );
   }
-
 }
-

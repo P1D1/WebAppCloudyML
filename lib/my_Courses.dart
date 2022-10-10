@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/combo/combo_course.dart';
@@ -11,8 +10,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
-
 import 'catalogue_screen.dart';
 import 'module/pdf_course.dart';
 
@@ -59,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         name = value.data()!['name'];
         print('ufbufb--$name');
+        print('ufbufb--$courseId');
       });
     });
   }
@@ -215,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     type:
                                         PageTransitionType.rightToLeftWithFade,
                                     child: VideoScreen(
-                                      isdemo: true,
+                                      isDemo: true,
                                       courseName: course[index].courseName,
                                       sr: 1,
                                     ),
@@ -260,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       type: PageTransitionType
                                           .rightToLeftWithFade,
                                       child: VideoScreen(
-                                        isdemo: true,
+                                        isDemo: true,
                                         courseName: course[index].courseName,
                                         sr: 1,
                                       ),

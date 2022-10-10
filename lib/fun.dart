@@ -793,6 +793,7 @@ Drawer dr(BuildContext context) {
           onTap: () async {
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => HomeScreen()));
+            print("this is courseID: $courseId");
           },
         ),
         InkWell(

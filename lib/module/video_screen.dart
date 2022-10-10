@@ -1,12 +1,10 @@
 import 'dart:io';
 import 'dart:math';
-
 import 'package:auto_orientation/auto_orientation.dart';
 import 'package:cloudyml_app2/models/video_details.dart';
 import 'package:cloudyml_app2/offline/db.dart';
 import 'package:cloudyml_app2/globals.dart';
 import 'package:cloudyml_app2/models/offline_model.dart';
-import 'package:cloudyml_app2/module/assignment_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/widgets/assignment_bottomsheet.dart';
 import 'package:cloudyml_app2/widgets/settings_bottomsheet.dart';
@@ -20,11 +18,14 @@ import 'package:video_player/video_player.dart';
 import 'dart:html' as html;
 
 class VideoScreen extends StatefulWidget {
+
+
+
   final int? sr;
-  final bool? isdemo;
+  final bool? isDemo;
   final String? courseName;
   static ValueNotifier<double> currentSpeed = ValueNotifier(1.0);
-  const VideoScreen({required this.isdemo, this.sr, this.courseName});
+  const VideoScreen({required this.isDemo, this.sr, this.courseName});
 
   @override
   _VideoScreenState createState() => _VideoScreenState();
@@ -157,7 +158,7 @@ class _VideoScreenState extends State<VideoScreen> {
         !_videoController!.value.isPlaying) {
       VideoScreen.currentSpeed.value = 1.0;
       _currentVideoIndex.value++;
-      intializeVidController(
+      initializeVidController(
         _listOfVideoDetails[_currentVideoIndex.value].videoUrl,
       );
     }
@@ -184,7 +185,7 @@ class _VideoScreenState extends State<VideoScreen> {
     _isPlaying = playing;
   }
 
-  void intializeVidController(String url) async {
+  void initializeVidController(String url) async {
     try {
       final oldVideoController = _videoController;
       if (oldVideoController != null) {
@@ -245,7 +246,7 @@ class _VideoScreenState extends State<VideoScreen> {
       print(response.headers);
       File file = File(savePath!);
       var raf = file.openSync(mode: FileMode.write);
-      print('savepath--$savePath');
+      print('savePath--$savePath');
 
       raf.writeFromSync(response.data);
       await raf.close();
@@ -267,6 +268,7 @@ class _VideoScreenState extends State<VideoScreen> {
   @override
   void dispose() {
     super.dispose();
+    print('dipsose -- Right click bandh ho gai');
     AutoOrientation.portraitUpMode();
     _disposed = true; 
     
@@ -280,7 +282,7 @@ class _VideoScreenState extends State<VideoScreen> {
     VideoScreen.currentSpeed.value = 1.0;
     getData();
     Future.delayed(Duration(milliseconds: 500), () {
-      intializeVidController(_listOfVideoDetails[0].videoUrl);
+      initializeVidController(_listOfVideoDetails[0].videoUrl);
     });
     super.initState();
   }
@@ -292,101 +294,102 @@ class _VideoScreenState extends State<VideoScreen> {
     var verticalScale = screenHeight / mockUpHeight;
     var horizontalScale = screenWidth / mockUpWidth;
     return Scaffold(
-        body: SafeArea(
-      child: Container(
-        color: Colors.white,
-        child: OrientationBuilder(
-          builder: (BuildContext context, Orientation orientation) {
-            final isPortrait = orientation == Orientation.portrait;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        enablePauseScreen = !enablePauseScreen;
-                      });
-                    },
-                    child: Container(
-                      color: Colors.black,
-                      child: FutureBuilder(
-                        future: playVideo,
-                        builder: (BuildContext context,
-                            AsyncSnapshot<dynamic> snapshot) {
-                          if (ConnectionState.done ==
-                              snapshot.connectionState) {
-                            return Stack(
-                              children: [
-                                Center(
-                                  child: AspectRatio(
-                                    aspectRatio: 16 / 9,
-                                    child: VideoPlayer(_videoController!),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+      ),
+        body: Container(
+          color: Colors.white,
+          child: OrientationBuilder(
+            builder: (BuildContext context, Orientation orientation) {
+              final isPortrait = orientation == Orientation.portrait;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          enablePauseScreen = !enablePauseScreen;
+                        });
+                      },
+                      child: Container(
+                        color: Colors.black,
+                        child: FutureBuilder(
+                          future: playVideo,
+                          builder: (BuildContext context,
+                              AsyncSnapshot<dynamic> snapshot) {
+                            if (ConnectionState.done ==
+                                snapshot.connectionState) {
+                              return Stack(
+                                children: [
+                                  Center(
+                                    child: AspectRatio(
+                                      aspectRatio: 16 / 9,
+                                      child: VideoPlayer(_videoController!),
+                                    ),
                                   ),
-                                ),
-                                enablePauseScreen
-                                    ? _buildControls(
-                                        context,
-                                        isPortrait,
-                                        horizontalScale,
-                                        verticalScale,
-                                      )
-                                    : SizedBox(),
-                                _isBuffering && !enablePauseScreen
-                                    ? Center(
-                                        heightFactor: 6.2,
-                                        child: Container(
-                                          width: 60,
-                                          height: 60,
-                                          child: CircularProgressIndicator(
-                                            color: Color.fromARGB(
-                                              114,
-                                              255,
-                                              255,
-                                              255,
+                                  enablePauseScreen
+                                      ? _buildControls(
+                                          context,
+                                          isPortrait,
+                                          horizontalScale,
+                                          verticalScale,
+                                        )
+                                      : SizedBox(),
+                                  _isBuffering && !enablePauseScreen
+                                      ? Center(
+                                          heightFactor: 6.2,
+                                          child: Container(
+                                            width: 60,
+                                            height: 60,
+                                            child: CircularProgressIndicator(
+                                              color: Color.fromARGB(
+                                                114,
+                                                255,
+                                                255,
+                                                255,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      )
-                                    : Container(),
-                              ],
-                            );
-                          } else {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                color: Color(0xFF7860DC),
-                              ),
-                            );
-                          }
-                        },
+                                        )
+                                      : Container(),
+                                ],
+                              );
+                            } else {
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFF7860DC),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        // },
+                        // ),
                       ),
-                      // },
-                      // ),
                     ),
                   ),
-                ),
-                isPortrait
-                    ? _buildPartition(
-                        context,
-                        horizontalScale,
-                        verticalScale,
-                      )
-                    : SizedBox(),
-                isPortrait
-                    ? Expanded(
-                        flex: 2,
-                        child: _buildVideoDetailsListTile(
+                  isPortrait
+                      ? _buildPartition(
+                          context,
                           horizontalScale,
                           verticalScale,
-                        ),
-                      )
-                    : SizedBox(),
-              ],
-            );
-          },
-        ),
-      ),
-    ));
+                        )
+                      : SizedBox(),
+                  isPortrait
+                      ? Expanded(
+                          flex: 2,
+                          child: _buildVideoDetailsListTile(
+                            horizontalScale,
+                            verticalScale,
+                          ),
+                        )
+                      : SizedBox(),
+                ],
+              );
+            },
+          ),
+        ));
   }
 
   Widget _buildControls(
@@ -403,7 +406,6 @@ class _VideoScreenState extends State<VideoScreen> {
           ListTile(
             leading: InkWell(
               onTap: () {
-                html.window.document.onContextMenu.listen((evt) => evt.stopImmediatePropagation()  );
                 Navigator.pop(context);
               },
               child: Icon(
@@ -456,7 +458,7 @@ class _VideoScreenState extends State<VideoScreen> {
                           onTap: () {
                             VideoScreen.currentSpeed.value = 1.0;
                             _currentVideoIndex.value--;
-                            intializeVidController(
+                            initializeVidController(
                               _listOfVideoDetails[_currentVideoIndex.value]
                                   .videoUrl,
                             );
@@ -507,7 +509,7 @@ class _VideoScreenState extends State<VideoScreen> {
                           onTap: () {
                             VideoScreen.currentSpeed.value = 1.0;
                             _currentVideoIndex.value++;
-                            intializeVidController(
+                            initializeVidController(
                               _listOfVideoDetails[_currentVideoIndex.value]
                                   .videoUrl,
                             );
@@ -690,7 +692,7 @@ class _VideoScreenState extends State<VideoScreen> {
                     child: ListTile(
                       onTap: () {
                         VideoScreen.currentSpeed.value = 1.0;
-                        intializeVidController(
+                        initializeVidController(
                           _listOfVideoDetails[index].videoUrl,
                         );
                         _currentVideoIndex.value = index;

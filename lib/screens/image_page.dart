@@ -13,7 +13,6 @@ class ImagePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isImage = ['.jpeg', '.jpg', '.png'].any(file.name.contains);
-    
     final size = MediaQuery.of(context).size;
     final height = size.height;
     final width = size.width;
@@ -44,19 +43,20 @@ class ImagePage extends StatelessWidget {
               },
               child: CachedNetworkImage(
                 imageUrl: file.url,
-                placeholder: (context, url) => CircularProgressIndicator(),
+                progressIndicatorBuilder: (context, url, downloadProgress) =>
+                    CircularProgressIndicator(value: downloadProgress.progress),
                 errorWidget: (context, url, error) => Icon(Icons.error),
                 height: height,
                 width: width,
                 // fit: BoxFit.cover,
               ),
             )
-          : Center(
-              child: Text(
-                'Cannot be displayed',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
+              : Center(
+                  child: Text(
+                    'Cannot be displayed',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
     );
   }
 }
