@@ -17,6 +17,7 @@ import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
+import 'dart:html' as html;
 
 class VideoScreen extends StatefulWidget {
   final int? sr;
@@ -275,6 +276,7 @@ class _VideoScreenState extends State<VideoScreen> {
 
   @override
   void initState() {
+    html.window.document.onContextMenu.listen((evt) => evt.preventDefault());
     VideoScreen.currentSpeed.value = 1.0;
     getData();
     Future.delayed(Duration(milliseconds: 500), () {
@@ -401,6 +403,7 @@ class _VideoScreenState extends State<VideoScreen> {
           ListTile(
             leading: InkWell(
               onTap: () {
+                html.window.document.onContextMenu.listen((evt) => evt.stopImmediatePropagation()  );
                 Navigator.pop(context);
               },
               child: Icon(
