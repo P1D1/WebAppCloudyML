@@ -18,6 +18,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:renderer_switcher/renderer_switcher.dart';
 
 
 
@@ -87,6 +88,14 @@ Future<void> main() async {
       statusBarColor: Colors.transparent,
     ),
   );
+
+  final currentRenderer = await RendererSwitcher.getCurrentWebRenderer();
+
+  if(currentRenderer == WebRenderer.auto){
+    // Switches web renderer to html and reloads the window.
+    RendererSwitcher.switchWebRenderer(WebRenderer.html);
+  }
+
 }
 
 class MyApp extends StatelessWidget {
