@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../helpers/file_handler.dart';
 import 'dart:io';
 import 'package:hexcolor/hexcolor.dart';
+import 'Full_Screen_Image.dart';
 
 class ImageMsgTile extends StatefulWidget {
   final Map<String, dynamic>? map;
@@ -77,38 +78,44 @@ class _ImageMsgTileState extends State<ImageMsgTile> {
                             color: Colors.black, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    Container(
-                      constraints: BoxConstraints(minHeight: size.width * 0.5),
-                      child:
-                      // checkImageExists(widget.map!["message"]) != null
-                      //     ? Image.file(
-                      //         File(filePath),
-                      //         fit: BoxFit.cover,
-                      //       )
-                           CachedNetworkImage(
-                              placeholder: (context, url) =>
-                                  CircularProgressIndicator(),
-                              errorWidget: (context, url, error) =>
-                                  Icon(Icons.error),
-                              imageUrl: widget.map!["link"],
-                              fit: BoxFit.cover,
-                              // loadingBuilder: (BuildContext context,
-                              //     Widget child,
-                              //     ImageChunkEvent? loadingProgress) {
-                              //   if (loadingProgress == null) return child;
-                              //   return Center(
-                              //     child: CircularProgressIndicator(
-                              //       color: Colors.white,
-                              //       value: loadingProgress.expectedTotalBytes !=
-                              //               null
-                              //           ? loadingProgress
-                              //                   .cumulativeBytesLoaded /
-                              //               loadingProgress.expectedTotalBytes!
-                              //           : null,
-                              //     ),
-                              //   );
-                              // },
-                            ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => FullScreenImage(map: widget.map,)));
+                        print('Hello!! Welcome to fullscreen');
+                      },
+                      child: Container(
+                        constraints: BoxConstraints(minHeight: size.width * 0.5),
+                        child:
+                        // checkImageExists(widget.map!["message"]) != null
+                        //     ? Image.file(
+                        //         File(filePath),
+                        //         fit: BoxFit.cover,
+                        //       )
+                             CachedNetworkImage(
+                                placeholder: (context, url) =>
+                                    CircularProgressIndicator(),
+                                errorWidget: (context, url, error) =>
+                                    Icon(Icons.error),
+                                imageUrl: widget.map!["link"],
+                                fit: BoxFit.cover,
+                                // loadingBuilder: (BuildContext context,
+                                //     Widget child,
+                                //     ImageChunkEvent? loadingProgress) {
+                                //   if (loadingProgress == null) return child;
+                                //   return Center(
+                                //     child: CircularProgressIndicator(
+                                //       color: Colors.white,
+                                //       value: loadingProgress.expectedTotalBytes !=
+                                //               null
+                                //           ? loadingProgress
+                                //                   .cumulativeBytesLoaded /
+                                //               loadingProgress.expectedTotalBytes!
+                                //           : null,
+                                //     ),
+                                //   );
+                                // },
+                              ),
+                      ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(

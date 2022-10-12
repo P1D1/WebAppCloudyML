@@ -53,6 +53,7 @@ class _CurriculamState extends State<Curriculam> {
         );
       }
     });
+
   }
 
   void getModuleId() async {

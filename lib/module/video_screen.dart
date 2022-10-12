@@ -268,7 +268,6 @@ class _VideoScreenState extends State<VideoScreen> {
   @override
   void dispose() {
     super.dispose();
-    print('dipsose -- Right click bandh ho gai');
     AutoOrientation.portraitUpMode();
     _disposed = true; 
     
@@ -296,6 +295,13 @@ class _VideoScreenState extends State<VideoScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(onPressed: () {
+            setState(() {
+              enablePauseScreen = !enablePauseScreen;
+            });
+          }, icon: Icon(Icons.video_settings)),
+        ],
       ),
         body: Container(
           color: Colors.white,
@@ -306,67 +312,60 @@ class _VideoScreenState extends State<VideoScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          enablePauseScreen = !enablePauseScreen;
-                        });
-                      },
-                      child: Container(
-                        color: Colors.black,
-                        child: FutureBuilder(
-                          future: playVideo,
-                          builder: (BuildContext context,
-                              AsyncSnapshot<dynamic> snapshot) {
-                            if (ConnectionState.done ==
-                                snapshot.connectionState) {
-                              return Stack(
-                                children: [
-                                  Center(
-                                    child: AspectRatio(
-                                      aspectRatio: 16 / 9,
-                                      child: VideoPlayer(_videoController!),
-                                    ),
+                    child: Container(
+                      color: Colors.black,
+                      child: FutureBuilder(
+                        future: playVideo,
+                        builder: (BuildContext context,
+                            AsyncSnapshot<dynamic> snapshot) {
+                          if (ConnectionState.done ==
+                              snapshot.connectionState) {
+                            return Stack(
+                              children: [
+                                Center(
+                                  child: AspectRatio(
+                                    aspectRatio: 16 / 9,
+                                    child: VideoPlayer(_videoController!),
                                   ),
-                                  enablePauseScreen
-                                      ? _buildControls(
-                                          context,
-                                          isPortrait,
-                                          horizontalScale,
-                                          verticalScale,
-                                        )
-                                      : SizedBox(),
-                                  _isBuffering && !enablePauseScreen
-                                      ? Center(
-                                          heightFactor: 6.2,
-                                          child: Container(
-                                            width: 60,
-                                            height: 60,
-                                            child: CircularProgressIndicator(
-                                              color: Color.fromARGB(
-                                                114,
-                                                255,
-                                                255,
-                                                255,
-                                              ),
+                                ),
+                                enablePauseScreen
+                                    ? _buildControls(
+                                        context,
+                                        isPortrait,
+                                        horizontalScale,
+                                        verticalScale,
+                                      )
+                                    : SizedBox(),
+                                _isBuffering && !enablePauseScreen
+                                    ? Center(
+                                        heightFactor: 6.2,
+                                        child: Container(
+                                          width: 60,
+                                          height: 60,
+                                          child: CircularProgressIndicator(
+                                            color: Color.fromARGB(
+                                              114,
+                                              255,
+                                              255,
+                                              255,
                                             ),
                                           ),
-                                        )
-                                      : Container(),
-                                ],
-                              );
-                            } else {
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  color: Color(0xFF7860DC),
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                        // },
-                        // ),
+                                        ),
+                                      )
+                                    : Container(),
+                              ],
+                            );
+                          } else {
+                            return Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF7860DC),
+                              ),
+                            );
+                          }
+                        },
                       ),
+                      // },
+                      // ),
                     ),
                   ),
                   isPortrait
@@ -410,7 +409,6 @@ class _VideoScreenState extends State<VideoScreen> {
               },
               child: Icon(
                 Icons.arrow_back_ios_new,
-
                 color: Colors.white,
               ),
             ),

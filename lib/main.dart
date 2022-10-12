@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:html' as html;
 import 'package:cloudyml_app2/MyAccount/myaccount.dart';
 import 'package:cloudyml_app2/Providers/AppProvider.dart';
 import 'package:cloudyml_app2/Providers/UserProvider.dart';
@@ -89,6 +90,7 @@ Future<void> main() async {
     ),
   );
 
+  html.window.document.onContextMenu.listen((evt) => evt.preventDefault());
   final currentRenderer = await RendererSwitcher.getCurrentWebRenderer();
 
   if(currentRenderer == WebRenderer.auto){

@@ -6,6 +6,7 @@ import 'package:cloudyml_app2/models/offline_model.dart';
 import 'package:cloudyml_app2/widgets/settings_bottomsheet.dart';
 import 'package:cloudyml_app2/widgets/video_player_widgets/fullscreen_icon.dart';
 import 'package:flutter/material.dart';
+import 'dart:html' as html;
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
@@ -121,6 +122,7 @@ class _VideoScreenOfflineState extends State<VideoScreenOffline> {
 
   @override
   void initState() {
+    html.window.document.onContextMenu.listen((evt) => evt.preventDefault());
     // VideoScreen.currentSpeed.value = 1.0;
     intializeVidController(
         File(widget.videos[VideoScreenOffline._currentVideoIndex.value].path!));

@@ -19,6 +19,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -285,22 +286,75 @@ class _ChatScreenState extends State<ChatScreen> {
   //
   // }
 
+  // Future getPicture(type) async {
+  //   //to get the image from galary
+  //   ImagePicker _picker = ImagePicker();
+  //
+  //   await _picker.pickImage(
+  //       source: ImageSource.gallery,imageQuality: 60)
+  //       .catchError((onError)
+  //   { Fluttertoast.showToast(msg: onError.toString());}).then((xFile) async {
+  //     if (xFile != null) {
+  //
+  //       pickedFile = File(xFile.path);
+  //       pickedFileName = xFile.name.toString();
+  //       final String filepath = path.basename(pickedFile.toString());
+  //
+  //       var storageRef = FirebaseStorage.instance
+  //           .ref()
+  //           .child('test_developer')
+  //           .child(pickedFileName!);
+  //
+  //       var sentData = await FirebaseFirestore.instance
+  //           .collection("groups")
+  //           .doc(widget.groupData!.id)
+  //           .collection("chats")
+  //           .add({
+  //         "link": "",
+  //         "message": pickedFileName,
+  //         "sendBy": widget.userData["name"],
+  //         "time": FieldValue.serverTimestamp(),
+  //         "type": "image",
+  //       });
+  //
+  //       await filterMentorStudentNotification(filepath);
+  //
+  //       final UploadTask uploadTask = storageRef.putFile(pickedFile!);
+  //
+  //       final TaskSnapshot downloadUrl = await uploadTask;
+  //       final String attachUrl = (await downloadUrl.ref.getDownloadURL());
+  //
+  //       await sentData.update({"link": attachUrl});
+  //
+  //     }
+  //   });
+  // }
+
 
   Future getImage(BuildContext context, type) async {
+
     FilePickerResult? result;
 
     try {
       result = await FilePicker.platform.pickFiles(
-          type: FileType.any);
+          type: FileType.any,
+          allowCompression: true,
+        withData: true,
+      );
     } catch (e) {
       print(e.toString());
     }
     if (result != null && result.files.isNotEmpty) {
       try {
-        final uploadFile = result.files.single.bytes;
+        Uint8List? uploadFile = result.files.single.bytes;
         uploadedFile = uploadFile;
         final String filepath = path.basename(uploadFile.toString());
-        pickedFileName = result.names[0].toString();
+        String pickedFileName = result.files.first.name;
+
+        var storageRef = FirebaseStorage.instance
+            .ref()
+            .child('test_developer')
+            .child(pickedFileName);
 
         var sentData = await FirebaseFirestore.instance
             .collection("groups")
@@ -314,19 +368,16 @@ class _ChatScreenState extends State<ChatScreen> {
           "type": "image",
         });
 
-        var storageRef = FirebaseStorage.instance
-            .ref()
-            .child('test_developer')
-            .child(pickedFileName.toString());
-
         await filterMentorStudentNotification(filepath);
-
         final UploadTask uploadTask = storageRef.putData(uploadFile!);
 
         final TaskSnapshot downloadUrl = await uploadTask;
         final String attachUrl = (await downloadUrl.ref.getDownloadURL());
 
         await sentData.update({"link": attachUrl});
+
+        print('link is here: $attachUrl');
+
       } catch (e) {
         Fluttertoast.showToast(msg: e.toString());
         print(e.toString());
@@ -335,14 +386,15 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
 
+
   //file picker logic
   Future getFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
+
     if (result != null) {
       File a = File(result.files.single.path.toString());
       pickedFile = a;
       pickedFileName = result.names[0].toString();
-
       uploadFile("file");
     }
   }
@@ -1049,57 +1101,56 @@ class _ChatScreenState extends State<ChatScreen> {
                               snapshot.connectionState ==
                                   ConnectionState.none) {
                             return snapshot.hasData
-                                ? const Center(
-                                    child: CircularProgressIndicator(),
-                                  )
-                                : Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                          padding:
-                                              EdgeInsets.fromLTRB(5, 5, 5, 5),
-                                          decoration: BoxDecoration(
-                                            color: Colors.transparent,
+                                ? Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                    padding:
+                                    EdgeInsets.fromLTRB(5, 5, 5, 5),
+                                    decoration: BoxDecoration(
+                                      color: Colors.transparent,
 
-                                            //DecorationImage
-                                            // border: Border.all(
-                                            //   // color: Colors.green,
-                                            //   width: 8,
-                                            // ), //Border.all
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey,
-                                                offset: const Offset(
-                                                  1.0,
-                                                  1.0,
-                                                ), //Offset
-                                                blurRadius: 2.0,
-                                                spreadRadius: 2.0,
-                                              ), //BoxShadow
-                                              BoxShadow(
-                                                color: Color.fromARGB(
-                                                    255, 255, 255, 255),
-                                                offset: const Offset(0.0, 0.0),
-                                                blurRadius: 0.0,
-                                                spreadRadius: 0.0,
-                                              ), //BoxShadow
-                                            ],
-                                          ),
-                                          margin:
-                                              EdgeInsets.fromLTRB(25, 0, 25, 0),
-                                          child: chat()
-                                          //  Text(
-                                          // 'You can ask assignment related doubts here 6pm- midnight.(Indian standard time)\nour mentors:-\n6:00pm-7:30pm - Rahul\n7:30pm-midnight - Harsh'),
-                                          )
-                                      // Center(
-                                      //     child: Text("Start a Conversation."),
-                                      //   ),
-                                    ],
-                                  );
+                                      //DecorationImage
+                                      // border: Border.all(
+                                      //   // color: Colors.green,
+                                      //   width: 8,
+                                      // ), //Border.all
+                                      borderRadius:
+                                      BorderRadius.circular(10),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey,
+                                          offset: const Offset(
+                                            1.0,
+                                            1.0,
+                                          ), //Offset
+                                          blurRadius: 2.0,
+                                          spreadRadius: 2.0,
+                                        ), //BoxShadow
+                                        BoxShadow(
+                                          color: Color.fromARGB(
+                                              255, 255, 255, 255),
+                                          offset: const Offset(0.0, 0.0),
+                                          blurRadius: 0.0,
+                                          spreadRadius: 0.0,
+                                        ), //BoxShadow
+                                      ],
+                                    ),
+                                    margin:
+                                    EdgeInsets.fromLTRB(25, 0, 25, 0),
+                                    child: chat()
+                                  //  Text(
+                                  // 'You can ask assignment related doubts here 6pm- midnight.(Indian standard time)\nour mentors:-\n6:00pm-7:30pm - Rahul\n7:30pm-midnight - Harsh'),
+                                )
+                                // Center(
+                                //     child: Text("Start a Conversation."),
+                                //   ),
+                              ],
+                            ) : const Center(
+                                    child: CircularProgressIndicator(),
+                            );
                           } else {
                             if (snapshot.data != null) {
                               print("MessageDataa = = ${snapshot.data}");
@@ -1349,25 +1400,13 @@ class _ChatScreenState extends State<ChatScreen> {
                                     contentPadding:
                                         EdgeInsets.fromLTRB(10, 4, 0, 5),
                                     // all(4),
-                                    suffixIcon: Row(
-                                      children: [
-                                        IconButton(
-                                          onPressed: () =>
-                                              getImage(context, 'image'),
-                                          icon: const Icon(
-                                            Icons.photo,
-                                            color: Color(0xFF7860DC),
-                                          ),
-                                        ),
-                                        IconButton(
-                                          onPressed: () =>
-                                              getFile(),
-                                          icon: const Icon(
-                                            Icons.attach_file,
-                                            color: Color(0xFF7860DC),
-                                          ),
-                                        ),
-                                      ],
+                                    suffixIcon: IconButton(
+                                      onPressed: () =>
+                                          getImage(context, 'image'),
+                                      icon: const Icon(
+                                        Icons.photo,
+                                        color: Color(0xFF7860DC),
+                                      ),
                                     ),
                                     fillColor:
                                         const Color.fromARGB(255, 119, 5, 181),
