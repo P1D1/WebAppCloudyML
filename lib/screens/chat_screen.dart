@@ -1510,6 +1510,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ? MessageTile(size, map, widget.userData["name"], currentTag)
         : map["type"] == "image"
             ? ImageMsgTile(
+                size: size,
                 map: map,
                 displayName: widget.userData["name"],
                 appStorage: appStorage)

@@ -1,12 +1,18 @@
+import 'dart:html';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloudyml_app2/helpers/file_handler.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:image_downloader_web/image_downloader_web.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+
+import '../api/firebase_api.dart';
+import '../models/firebase_file.dart';
 
 class FullScreenImage extends StatefulWidget {
   final Map<String, dynamic>? map;
@@ -18,6 +24,8 @@ class FullScreenImage extends StatefulWidget {
 }
 
 class _FullScreenImageState extends State<FullScreenImage> {
+  WebImageDownloader _webImageDownloader = WebImageDownloader();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +51,11 @@ class _FullScreenImageState extends State<FullScreenImage> {
               right: 10,
               child: IconButton(
                   onPressed: () async {
-                    openFile(url: widget.map!["link"], fileName: widget.map!["link"], );
+                    print('download link: ${widget.map!['link']}');
+                    await downloadFile(widget.map!['link']);
+                    print('executed link: ${widget.map!['link']}');
+                    await ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Downloading file')));
                   },
                   icon: Icon(Icons.download_for_offline_outlined,
                       color: Colors.black)),
@@ -54,44 +66,20 @@ class _FullScreenImageState extends State<FullScreenImage> {
     );
   }
 
-  Future<File?> downloadFile(String url, String name, file) async {
-    try {
-      final response = await Dio().get(
-        url,
-        options: Options(
-          responseType: ResponseType.bytes,
-          followRedirects: false,
-          receiveTimeout: 0,
-        ),
-      );
+  // Future<void> downloadUrl() async {
+  //   setState(() {
+  //     downloading = true;
+  //   });
+  //   await _webImageDownloader.downloadImageFromWeb(widget.map!['link'], imageQuality: 0.5);
+  //   setState(() {
+  //     downloading = false;
+  //   });
+  //   print('loading snackbar');
+  // }
 
-      final raf = file.openSync(mode: FileMode.write);
-      raf.writeFromSync(response.data);
-      await raf.close();
-
-      return file;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  Future openFile({required String url, String? fileName}) async {
-    if (await Permission.storage.request().isGranted) {
-      final appStorage = await getExternalStorageDirectory();
-      final file = File("${appStorage!.path}/$fileName");
-
-      if (!file.existsSync()) {
-        Fluttertoast.showToast(msg: "Downloading...");
-        final downloadedFile = await downloadFile(url, fileName!, file);
-        if (downloadedFile != null) {
-          OpenFilex.open(downloadedFile.path);
-          print('this is downloaded image: $downloadedFile');
-        }
-      } else {
-        OpenFilex.open(file.path);
-        print('this is downloaded name: $fileName');
-        print('this is downloaded name: ${file.path}');
-      }
-    }
+  downloadFile(url) {
+    AnchorElement anchorElement = AnchorElement(href: url);
+    anchorElement.download = 'Any image';
+    anchorElement.click();
   }
 }
