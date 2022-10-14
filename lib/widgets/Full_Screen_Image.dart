@@ -8,7 +8,6 @@ import 'package:dio/dio.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:image_downloader_web/image_downloader_web.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../api/firebase_api.dart';
@@ -24,7 +23,6 @@ class FullScreenImage extends StatefulWidget {
 }
 
 class _FullScreenImageState extends State<FullScreenImage> {
-  WebImageDownloader _webImageDownloader = WebImageDownloader();
 
   @override
   Widget build(BuildContext context) {

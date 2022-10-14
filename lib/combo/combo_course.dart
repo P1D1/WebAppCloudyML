@@ -45,6 +45,7 @@ class _ComboCourseState extends State<ComboCourse> {
   //   return returnbool;
   // }
   Map userMap = Map<String, dynamic>();
+
   void dbCheckerForPayInParts() async {
     DocumentSnapshot userDocs = await FirebaseFirestore.instance
         .collection('Users')
@@ -95,6 +96,7 @@ class _ComboCourseState extends State<ComboCourse> {
     super.initState();
     dbCheckerForPayInParts();
   }
+
 
   @override
   Widget build(BuildContext context) {

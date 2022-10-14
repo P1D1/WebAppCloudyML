@@ -9,23 +9,26 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/widgets/assignment_bottomsheet.dart';
 import 'package:cloudyml_app2/widgets/settings_bottomsheet.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:html' as html;
 
+import '../combo/combo_course.dart';
+import '../models/course_details.dart';
+
 class VideoScreen extends StatefulWidget {
-
-
-
+  final List<dynamic>? courses;
   final int? sr;
   final bool? isDemo;
   final String? courseName;
   static ValueNotifier<double> currentSpeed = ValueNotifier(1.0);
-  const VideoScreen({required this.isDemo, this.sr, this.courseName});
+  const VideoScreen({required this.isDemo, this.sr, this.courseName, this.courses});
 
   @override
   _VideoScreenState createState() => _VideoScreenState();
@@ -269,8 +272,8 @@ class _VideoScreenState extends State<VideoScreen> {
   void dispose() {
     super.dispose();
     AutoOrientation.portraitUpMode();
-    _disposed = true; 
-    
+    _disposed = true;
+
     _videoController!.dispose();
     _videoController = null;
   }
@@ -286,104 +289,145 @@ class _VideoScreenState extends State<VideoScreen> {
     super.initState();
   }
 
+
   @override
   Widget build(BuildContext context) {
+    List<CourseDetails> course = Provider.of<List<CourseDetails>>(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     var verticalScale = screenHeight / mockUpHeight;
     var horizontalScale = screenWidth / mockUpWidth;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        actions: [
-          IconButton(onPressed: () {
-            setState(() {
-              enablePauseScreen = !enablePauseScreen;
-            });
-          }, icon: Icon(Icons.video_settings)),
-        ],
-      ),
         body: Container(
           color: Colors.white,
           child: OrientationBuilder(
             builder: (BuildContext context, Orientation orientation) {
               final isPortrait = orientation == Orientation.portrait;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              return
+                Row(
                 children: [
+                  isPortrait ? Container() : Expanded(
+                    flex: 1,
+                    child: Column(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_back_ios),
+                                  Text('Back to courses', style: TextStyle(fontWeight: FontWeight.bold),)
+                                ],
+                              ),
+                            )
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildVideoDetailsListTile(
+                          horizontalScale,
+                          verticalScale,
+                        ),
+                        ),
+                      ],
+                    ),
+                  ),
                   Expanded(
-                    child: Container(
-                      color: Colors.black,
-                      child: FutureBuilder(
-                        future: playVideo,
-                        builder: (BuildContext context,
-                            AsyncSnapshot<dynamic> snapshot) {
-                          if (ConnectionState.done ==
-                              snapshot.connectionState) {
-                            return Stack(
-                              children: [
-                                Center(
-                                  child: AspectRatio(
-                                    aspectRatio: 16 / 9,
-                                    child: VideoPlayer(_videoController!),
-                                  ),
-                                ),
-                                enablePauseScreen
-                                    ? _buildControls(
-                                        context,
-                                        isPortrait,
-                                        horizontalScale,
-                                        verticalScale,
-                                      )
-                                    : SizedBox(),
-                                _isBuffering && !enablePauseScreen
-                                    ? Center(
-                                        heightFactor: 6.2,
-                                        child: Container(
-                                          width: 60,
-                                          height: 60,
-                                          child: CircularProgressIndicator(
-                                            color: Color.fromARGB(
-                                              114,
-                                              255,
-                                              255,
-                                              255,
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                enablePauseScreen = !enablePauseScreen;
+                                print('Container of column clicked');
+                              });
+                            },
+                            child: Container(
+                              color: Colors.black,
+                              child: FutureBuilder(
+                                future: playVideo,
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<dynamic> snapshot) {
+                                  if (ConnectionState.done ==
+                                      snapshot.connectionState) {
+                                    return Stack(
+                                      children: [
+                                        Container(
+                                          child: Center(
+                                            child: AspectRatio(
+                                              aspectRatio: 16 / 9,
+                                              child: VideoPlayer(
+                                                  _videoController!),
                                             ),
                                           ),
                                         ),
-                                      )
-                                    : Container(),
-                              ],
-                            );
-                          } else {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                color: Color(0xFF7860DC),
+                                        enablePauseScreen
+                                            ? _buildControls(
+                                                context,
+                                                isPortrait,
+                                                horizontalScale,
+                                                verticalScale,
+                                              )
+                                            : SizedBox(),
+                                        _isBuffering && !enablePauseScreen
+                                            ? Center(
+                                                heightFactor: 6.2,
+                                                child: Container(
+                                                  width: 60,
+                                                  height: 60,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    color: Color.fromARGB(
+                                                      114,
+                                                      255,
+                                                      255,
+                                                      255,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : Container(),
+                                      ],
+                                    );
+                                  } else {
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        color: Color(0xFF7860DC),
+                                      ),
+                                    );
+                                  }
+                                },
                               ),
-                            );
-                          }
-                        },
-                      ),
-                      // },
-                      // ),
+                              // },
+                              // ),
+                            ),
+                          ),
+                        ),
+                        isPortrait
+                            ? _buildPartition(
+                                context,
+                                horizontalScale,
+                                verticalScale,
+                              )
+                            : SizedBox(),
+                        isPortrait
+                            ? Expanded(
+                                flex: 2,
+                                child: _buildVideoDetailsListTile(
+                                  horizontalScale,
+                                  verticalScale,
+                                ),
+                              )
+                            : SizedBox(),
+                      ],
                     ),
                   ),
-                  isPortrait
-                      ? _buildPartition(
-                          context,
-                          horizontalScale,
-                          verticalScale,
-                        )
-                      : SizedBox(),
-                  isPortrait
-                      ? Expanded(
-                          flex: 2,
-                          child: _buildVideoDetailsListTile(
-                            horizontalScale,
-                            verticalScale,
-                          ),
-                        )
-                      : SizedBox(),
                 ],
               );
             },
@@ -403,15 +447,9 @@ class _VideoScreenState extends State<VideoScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           ListTile(
-            leading: InkWell(
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: Icon(
-                Icons.arrow_back_ios_new,
-                color: Colors.white,
-              ),
-            ),
+            leading: isPortrait ? IconButton(onPressed: () {
+              Navigator.pop(context);
+            }, icon: Icon(Icons.arrow_back_ios, color: Colors.white,),) : null,
             title: Text(
               _listOfVideoDetails[_currentVideoIndex.value].videoTitle,
               textAlign: TextAlign.center,
