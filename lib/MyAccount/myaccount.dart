@@ -440,66 +440,66 @@ class _MyAccountPageState extends State<MyAccountPage> {
                             color: Colors.black,
                           ),
                         ),
-                        InkWell(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        OfflinePage()));
-                          },
-                          child: Padding(
-                              padding: EdgeInsets.fromLTRB(
-                                  horizontalScale * 29,
-                                  verticalScale * 23,
-                                  horizontalScale * 18,
-                                  verticalScale * 14),
-                              child: Row(
-                                children: [
-                                  Container(
-                                      height:
-                                          min(horizontalScale, verticalScale) *
-                                              42,
-                                      width:
-                                          min(horizontalScale, verticalScale) *
-                                              42,
-                                      decoration: BoxDecoration(
-                                        color: HexColor('EBE9FE'),
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(min(horizontalScale,
-                                                    verticalScale) *
-                                                8)),
-                                      ),
-                                      child: Icon(
-                                        Icons.download,
-                                        color: HexColor('6153D3'),
-                                      )),
-                                  SizedBox(
-                                    width: horizontalScale * 18,
-                                  ),
-                                  Text(
-                                    'Downloads',
-                                    textScaleFactor:
-                                        min(horizontalScale, verticalScale),
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                ],
-                              )),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(
-                              horizontalScale * 30,
-                              verticalScale * 0,
-                              horizontalScale * 30,
-                              verticalScale * 0),
-                          child: Divider(
-                            height: 1,
-                            thickness: 1,
-                            color: Colors.black,
-                          ),
-                        ),
+                        // InkWell(
+                        //   onTap: () {
+                        //     // Navigator.push(
+                        //     //     context,
+                        //     //     MaterialPageRoute(
+                        //     //         builder: (context) =>
+                        //     //             OfflinePage()));
+                        //   },
+                        //   child: Padding(
+                        //       padding: EdgeInsets.fromLTRB(
+                        //           horizontalScale * 29,
+                        //           verticalScale * 23,
+                        //           horizontalScale * 18,
+                        //           verticalScale * 14),
+                        //       child: Row(
+                        //         children: [
+                        //           Container(
+                        //               height:
+                        //                   min(horizontalScale, verticalScale) *
+                        //                       42,
+                        //               width:
+                        //                   min(horizontalScale, verticalScale) *
+                        //                       42,
+                        //               decoration: BoxDecoration(
+                        //                 color: HexColor('EBE9FE'),
+                        //                 borderRadius: BorderRadius.all(
+                        //                     Radius.circular(min(horizontalScale,
+                        //                             verticalScale) *
+                        //                         8)),
+                        //               ),
+                        //               child: Icon(
+                        //                 Icons.download,
+                        //                 color: HexColor('6153D3'),
+                        //               )),
+                        //           SizedBox(
+                        //             width: horizontalScale * 18,
+                        //           ),
+                        //           Text(
+                        //             'Downloads',
+                        //             textScaleFactor:
+                        //                 min(horizontalScale, verticalScale),
+                        //             style: TextStyle(
+                        //                 fontSize: 18,
+                        //                 fontWeight: FontWeight.w600),
+                        //           ),
+                        //         ],
+                        //       )),
+                        // ),
+                        // Padding(
+                        //   padding: EdgeInsets.fromLTRB(
+                        //       horizontalScale * 30,
+                        //       verticalScale * 0,
+                        //       horizontalScale * 30,
+                        //       verticalScale * 0),
+                        //   child: Divider(
+                        //     height: 1,
+                        //     thickness: 1,
+                        //     color: Colors.black,
+                        //   ),
+                        // ),
                         InkWell(
                           onTap: () {
                             Navigator.push(

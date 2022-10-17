@@ -12,7 +12,7 @@ class ImagePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isImage = ['.jpeg', '.jpg', '.png'].any(file.name.contains);
+    final isImage = ['.jpeg', '.jpg', '.jfif', '.png'].any(file.name.contains);
     final size = MediaQuery.of(context).size;
     final height = size.height;
     final width = size.width;

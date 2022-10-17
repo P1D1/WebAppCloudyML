@@ -28,7 +28,8 @@ class VideoScreen extends StatefulWidget {
   final bool? isDemo;
   final String? courseName;
   static ValueNotifier<double> currentSpeed = ValueNotifier(1.0);
-  const VideoScreen({required this.isDemo, this.sr, this.courseName, this.courses});
+  const VideoScreen(
+      {required this.isDemo, this.sr, this.courseName, this.courses});
 
   @override
   _VideoScreenState createState() => _VideoScreenState();
@@ -289,7 +290,6 @@ class _VideoScreenState extends State<VideoScreen> {
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
     List<CourseDetails> course = Provider.of<List<CourseDetails>>(context);
@@ -299,140 +299,149 @@ class _VideoScreenState extends State<VideoScreen> {
     var horizontalScale = screenWidth / mockUpWidth;
     return Scaffold(
         body: Container(
-          color: Colors.white,
-          child: OrientationBuilder(
-            builder: (BuildContext context, Orientation orientation) {
-              final isPortrait = orientation == Orientation.portrait;
-              return
-                Row(
-                children: [
-                  isPortrait ? Container() : Expanded(
-                    flex: 1,
-                    child: Column(
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: Container(
-                            child: Padding(
+      color: Colors.white,
+      child: OrientationBuilder(
+        builder: (BuildContext context, Orientation orientation) {
+          final isPortrait = orientation == Orientation.portrait;
+          return Row(
+            children: [
+              isPortrait
+                  ? Container()
+                  : Expanded(
+                      flex: 1,
+                      child: Column(
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                                child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
                                 children: [
                                   Icon(Icons.arrow_back_ios),
-                                  Text('Back to courses', style: TextStyle(fontWeight: FontWeight.bold),)
+                                  Text(
+                                    'Back to courses',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  )
                                 ],
                               ),
-                            )
+                            )),
                           ),
-                        ),
-                        Expanded(
-                          child: _buildVideoDetailsListTile(
-                          horizontalScale,
-                          verticalScale,
-                        ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                enablePauseScreen = !enablePauseScreen;
-                                print('Container of column clicked');
-                              });
-                            },
-                            child: Container(
-                              color: Colors.black,
-                              child: FutureBuilder(
-                                future: playVideo,
-                                builder: (BuildContext context,
-                                    AsyncSnapshot<dynamic> snapshot) {
-                                  if (ConnectionState.done ==
-                                      snapshot.connectionState) {
-                                    return Stack(
-                                      children: [
-                                        Container(
-                                          child: Center(
-                                            child: AspectRatio(
-                                              aspectRatio: 16 / 9,
-                                              child: VideoPlayer(
-                                                  _videoController!),
-                                            ),
-                                          ),
-                                        ),
-                                        enablePauseScreen
-                                            ? _buildControls(
-                                                context,
-                                                isPortrait,
-                                                horizontalScale,
-                                                verticalScale,
-                                              )
-                                            : SizedBox(),
-                                        _isBuffering && !enablePauseScreen
-                                            ? Center(
-                                                heightFactor: 6.2,
-                                                child: Container(
-                                                  width: 60,
-                                                  height: 60,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    color: Color.fromARGB(
-                                                      114,
-                                                      255,
-                                                      255,
-                                                      255,
-                                                    ),
-                                                  ),
-                                                ),
-                                              )
-                                            : Container(),
-                                      ],
-                                    );
-                                  } else {
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        color: Color(0xFF7860DC),
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                              // },
-                              // ),
+                          Expanded(
+                            flex: 0,
+                              child: _buildPartition(
+                            context,
+                            horizontalScale,
+                            verticalScale,
+                          ),),
+                          Expanded(
+                            child: _buildVideoDetailsListTile(
+                              horizontalScale,
+                              verticalScale,
                             ),
                           ),
-                        ),
-                        isPortrait
-                            ? _buildPartition(
-                                context,
-                                horizontalScale,
-                                verticalScale,
-                              )
-                            : SizedBox(),
-                        isPortrait
-                            ? Expanded(
-                                flex: 2,
-                                child: _buildVideoDetailsListTile(
-                                  horizontalScale,
-                                  verticalScale,
-                                ),
-                              )
-                            : SizedBox(),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ));
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            enablePauseScreen = !enablePauseScreen;
+                            print('Container of column clicked');
+                          });
+                        },
+                        child: Container(
+                          color: Colors.black,
+                          child: FutureBuilder(
+                            future: playVideo,
+                            builder: (BuildContext context,
+                                AsyncSnapshot<dynamic> snapshot) {
+                              if (ConnectionState.done ==
+                                  snapshot.connectionState) {
+                                return Stack(
+                                  children: [
+                                    Container(
+                                      child: Center(
+                                        child: AspectRatio(
+                                          aspectRatio: 16 / 9,
+                                          child: VideoPlayer(_videoController!),
+                                        ),
+                                      ),
+                                    ),
+                                    enablePauseScreen
+                                        ? _buildControls(
+                                            context,
+                                            isPortrait,
+                                            horizontalScale,
+                                            verticalScale,
+                                          )
+                                        : SizedBox(),
+                                    _isBuffering && !enablePauseScreen
+                                        ? Center(
+                                            heightFactor: 6.2,
+                                            child: Container(
+                                              width: 60,
+                                              height: 60,
+                                              child: CircularProgressIndicator(
+                                                color: Color.fromARGB(
+                                                  114,
+                                                  255,
+                                                  255,
+                                                  255,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        : Container(),
+                                  ],
+                                );
+                              } else {
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    color: Color(0xFF7860DC),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                          // },
+                          // ),
+                        ),
+                      ),
+                    ),
+                    isPortrait
+                        ? _buildPartition(
+                            context,
+                            horizontalScale,
+                            verticalScale,
+                          )
+                        : SizedBox(),
+                    isPortrait
+                        ? Expanded(
+                            flex: 2,
+                            child: _buildVideoDetailsListTile(
+                              horizontalScale,
+                              verticalScale,
+                            ),
+                          )
+                        : SizedBox(),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    ));
   }
 
   Widget _buildControls(
@@ -447,9 +456,17 @@ class _VideoScreenState extends State<VideoScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           ListTile(
-            leading: isPortrait ? IconButton(onPressed: () {
-              Navigator.pop(context);
-            }, icon: Icon(Icons.arrow_back_ios, color: Colors.white,),) : null,
+            leading: isPortrait
+                ? IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.white,
+                    ),
+                  )
+                : null,
             title: Text(
               _listOfVideoDetails[_currentVideoIndex.value].videoTitle,
               textAlign: TextAlign.center,
@@ -629,12 +646,15 @@ class _VideoScreenState extends State<VideoScreen> {
             child: Row(
               children: [
                 SizedBox(width: 20),
-                _buildLecturesTab(context),
+                Expanded(child: _buildLecturesTab(context)),
                 SizedBox(width: 30),
-                _buildAssignmentTab(
-                  context,
-                  horizontalScale,
-                  verticalScale,
+                Expanded(
+                  flex: 1,
+                  child: _buildAssignmentTab(
+                    context,
+                    horizontalScale,
+                    verticalScale,
+                  ),
                 ),
               ],
             ),
@@ -749,47 +769,47 @@ class _VideoScreenState extends State<VideoScreen> {
                           fontFamily: "Medium",
                         ),
                       ),
-                      trailing: InkWell(
-                        onTap: () async {
-                          var directory =
-                              await getApplicationDocumentsDirectory();
-                          _currentVideoIndex.value = index;
-                          download(
-                              dio: Dio(),
-                              fileName: map['name'],
-                              url: map['url'],
-                              savePath:
-                                  "${directory.path}/${map['name'].replaceAll(' ', '')}.mp4",
-                              topicName: map['name'],
-                              courseName: widget.courseName);
-                        },
-                        child: _currentVideoIndex.value == index
-                            ? Stack(
-                                children: [
-                                  Positioned(
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    top: 0,
-                                    child: Icon(
-                                      Icons.download_for_offline_rounded,
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 30,
-                                    width: 30,
-                                    child: CircularProgressIndicator(
-                                      value: _downloadProgress.value,
-                                      color: Color(0xFF7860DC),
-                                      backgroundColor: Color(0xFFDDD2FB),
-                                    ),
-                                  )
-                                ],
-                              )
-                            : Icon(
-                                Icons.download_for_offline_rounded,
-                              ),
-                      ),
+                      // trailing: InkWell(
+                      //   onTap: () async {
+                      //     var directory =
+                      //         await getApplicationDocumentsDirectory();
+                      //     _currentVideoIndex.value = index;
+                      //     download(
+                      //         dio: Dio(),
+                      //         fileName: map['name'],
+                      //         url: map['url'],
+                      //         savePath:
+                      //             "${directory.path}/${map['name'].replaceAll(' ', '')}.mp4",
+                      //         topicName: map['name'],
+                      //         courseName: widget.courseName);
+                      //   },
+                      //   child: _currentVideoIndex.value == index
+                      //       ? Stack(
+                      //           children: [
+                      //             Positioned(
+                      //               bottom: 0,
+                      //               left: 0,
+                      //               right: 0,
+                      //               top: 0,
+                      //               child: Icon(
+                      //                 Icons.download_for_offline_rounded,
+                      //               ),
+                      //             ),
+                      //             SizedBox(
+                      //               height: 30,
+                      //               width: 30,
+                      //               child: CircularProgressIndicator(
+                      //                 value: _downloadProgress.value,
+                      //                 color: Color(0xFF7860DC),
+                      //                 backgroundColor: Color(0xFFDDD2FB),
+                      //               ),
+                      //             )
+                      //           ],
+                      //         )
+                      //       : Icon(
+                      //           Icons.download_for_offline_rounded,
+                      //         ),
+                      // ),
                     ),
                   );
                 });

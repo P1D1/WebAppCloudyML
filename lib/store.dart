@@ -125,7 +125,8 @@ class _StoreScreenState extends State<StoreScreen> {
                               SliverGridDelegateWithMaxCrossAxisExtent(
                                   maxCrossAxisExtent:
                                       MediaQuery.of(context).size.width * .5,
-                                  childAspectRatio: .68),
+                                  childAspectRatio: 1.15
+                              ),
                           itemCount: course.length,
                           itemBuilder: (context, index) {
                             return InkWell(
@@ -204,70 +205,76 @@ class _StoreScreenState extends State<StoreScreen> {
                                       SizedBox(
                                         height: 10,
                                       ),
-                                      Container(
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                .06,
-                                        child: Text(
-                                          course[index].courseName,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  .035),
+                                      Expanded(
+                                        flex: 1,
+                                        child: Container(
+                                          height:
+                                              MediaQuery.of(context).size.height *
+                                                  .06,
+                                          child: Text(
+                                            course[index].courseName,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    .035),
+                                          ),
                                         ),
                                       ),
                                       SizedBox(
                                         height:
                                             MediaQuery.of(context).size.height *
-                                                .004,
+                                                .02,
                                       ),
-                                      Row(
-                                        // mainAxisAlignment:
-                                        //     MainAxisAlignment
-                                        //         .center,
-                                        children: [
-                                          Text(
-                                            course[index].courseLanguage,
-                                            style: TextStyle(
-                                                fontSize: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    .03),
-                                          ),
-                                          SizedBox(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                .02,
-                                          ),
-                                          Text(
-                                            '||',
-                                            style: TextStyle(
-                                                fontSize: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    .03),
-                                          ),
-                                          SizedBox(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                .02,
-                                          ),
-                                          Text(
-                                            course[index].numOfVideos,
-                                            style: TextStyle(
-                                                fontSize: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    .03),
-                                          ),
-                                          // const SizedBox(
-                                          //   height: 10,
-                                          // ),
-                                        ],
+                                      SingleChildScrollView(
+                                        scrollDirection: Axis.vertical,
+                                        child: Row(
+                                          // mainAxisAlignment:
+                                          //     MainAxisAlignment
+                                          //         .center,
+                                          children: [
+                                            Text(
+                                              course[index].courseLanguage,
+                                              style: TextStyle(
+                                                  fontSize: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      .03),
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  .02,
+                                            ),
+                                            Text(
+                                              '||',
+                                              style: TextStyle(
+                                                  fontSize: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      .03),
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  .02,
+                                            ),
+                                            Text(
+                                              course[index].numOfVideos,
+                                              style: TextStyle(
+                                                  fontSize: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      .03),
+                                            ),
+                                            // const SizedBox(
+                                            //   height: 10,
+                                            // ),
+                                          ],
+                                        ),
                                       ),
                                       SizedBox(
                                         height:
@@ -316,26 +323,16 @@ class _StoreScreenState extends State<StoreScreen> {
                                       //     ),
                                       //   ],
                                       // ),
-                                      Row(
-                                        children: [
-                                          // SizedBox(
-                                          //     width: MediaQuery.of(
-                                          //         context)
-                                          //         .size
-                                          //         .width *
-                                          //         .23),
-                                          Text(
-                                            course[index].coursePrice,
-                                            style: TextStyle(
-                                              fontSize: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  .03,
-                                              color: Colors.indigo,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
+                                      Text(
+                                        course[index].coursePrice,
+                                        style: TextStyle(
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              .03,
+                                          color: Colors.indigo,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ],
                                   ),

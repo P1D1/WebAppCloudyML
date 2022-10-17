@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
   List<Widget> screens = [
     Home(),
     StoreScreen(),
-    OfflinePage(),
+    // OfflinePage(),
     GroupsList()
   ];
   List<String> titles = [
@@ -222,7 +222,8 @@ class _HomePageState extends State<HomePage> {
             ),
             InkWell(
               child: ListTile(
-                title: Text('My Account'),
+                title: Text(''
+                    'My Account'),
                 leading: Icon(
                   Icons.person,
                   color: HexColor('6153D3'),
@@ -363,7 +364,7 @@ class _HomePageState extends State<HomePage> {
                 Icons.home,
                 color: Colors.black,
               ),
-              label: ' ',
+              label: 'Home',
             ),
             BottomNavigationBarItem(
               icon: new Icon(Icons.store_outlined,
@@ -372,17 +373,17 @@ class _HomePageState extends State<HomePage> {
                 Icons.store,
                 color: Colors.black,
               ),
-              label: '   ',
+              label: 'Store',
             ),
-            BottomNavigationBarItem(
-              icon: new Icon(Icons.download_for_offline_outlined,
-                  color: Colors.black.withOpacity(0.5)),
-              activeIcon: Icon(
-                Icons.download_for_offline,
-                color: Colors.black,
-              ),
-              label: '   ',
-            ),
+            // BottomNavigationBarItem(
+            //   icon: new Icon(Icons.download_for_offline_outlined,
+            //       color: Colors.black.withOpacity(0.5)),
+            //   activeIcon: Icon(
+            //     Icons.download_for_offline,
+            //     color: Colors.black,
+            //   ),
+            //   label: '   ',
+            // ),
             BottomNavigationBarItem(
               icon: new Icon(Icons.chat_bubble_outline_sharp,
                   color: Colors.black.withOpacity(0.5)),
@@ -390,7 +391,7 @@ class _HomePageState extends State<HomePage> {
                 Icons.chat_bubble_outline_sharp,
                 color: Colors.black,
               ),
-              label: '   ',
+              label: 'Chat',
             ),
           ],
           type: BottomNavigationBarType.fixed,
