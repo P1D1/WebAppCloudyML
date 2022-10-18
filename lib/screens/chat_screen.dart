@@ -1404,7 +1404,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       onPressed: () =>
                                           getImage(context, 'image'),
                                       icon: const Icon(
-                                        Icons.photo,
+                                        Icons.attach_file,
                                         color: Color(0xFF7860DC),
                                       ),
                                     ),

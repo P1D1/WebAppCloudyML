@@ -21,6 +21,7 @@ import 'dart:html' as html;
 
 import '../combo/combo_course.dart';
 import '../models/course_details.dart';
+import 'new_assignment_screen.dart';
 
 class VideoScreen extends StatefulWidget {
   final List<dynamic>? courses;
@@ -330,13 +331,13 @@ class _VideoScreenState extends State<VideoScreen> {
                               ),
                             )),
                           ),
-                          Expanded(
-                            flex: 0,
-                              child: _buildPartition(
-                            context,
-                            horizontalScale,
-                            verticalScale,
-                          ),),
+                          // Expanded(
+                          //   flex: 0,
+                          //     child: _buildPartition(
+                          //   context,
+                          //   horizontalScale,
+                          //   verticalScale,
+                          // ),),
                           Expanded(
                             child: _buildVideoDetailsListTile(
                               horizontalScale,
@@ -348,7 +349,7 @@ class _VideoScreenState extends State<VideoScreen> {
                     ),
               Expanded(
                 flex: 2,
-                child: Column(
+                child: showAssignment ? Assignment_Screen() : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
@@ -373,7 +374,8 @@ class _VideoScreenState extends State<VideoScreen> {
                                       child: Center(
                                         child: AspectRatio(
                                           aspectRatio: 16 / 9,
-                                          child: VideoPlayer(_videoController!),
+                                          child:
+                                          VideoPlayer(_videoController!),
                                         ),
                                       ),
                                     ),
@@ -745,71 +747,94 @@ class _VideoScreenState extends State<VideoScreen> {
                     color: _currentVideoIndex.value == index
                         ? Color(0xFFDDD2FB)
                         : Colors.white,
-                    child: ListTile(
-                      onTap: () {
-                        VideoScreen.currentSpeed.value = 1.0;
-                        initializeVidController(
-                          _listOfVideoDetails[index].videoUrl,
-                        );
-                        _currentVideoIndex.value = index;
-                      },
-                      leading: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text('${index + 1}'),
-                      ),
-                      title: Text(
-                        map['name'],
-                        textScaleFactor: min(
-                          horizontalScale,
-                          verticalScale,
+                    child: Column(
+                      children: [
+                        ListTile(
+                          onTap: () {
+                            VideoScreen.currentSpeed.value = 1.0;
+                            initializeVidController(
+                              _listOfVideoDetails[index].videoUrl,
+                            );
+                            _currentVideoIndex.value = index;
+                            showAssignment = false;
+                            },
+                          leading: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text('${index + 1}'),
+                          ),
+                          title: Text(
+                            map['name'],
+                            textScaleFactor: min(
+                              horizontalScale,
+                              verticalScale,
+                            ),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 17,
+                              fontFamily: "Medium",
+                            ),
+                          ),
+                          // trailing: InkWell(
+                          //   onTap: () async {
+                          //     var directory =
+                          //         await getApplicationDocumentsDirectory();
+                          //     _currentVideoIndex.value = index;
+                          //     download(
+                          //         dio: Dio(),
+                          //         fileName: map['name'],
+                          //         url: map['url'],
+                          //         savePath:
+                          //             "${directory.path}/${map['name'].replaceAll(' ', '')}.mp4",
+                          //         topicName: map['name'],
+                          //         courseName: widget.courseName);
+                          //   },
+                          //   child: _currentVideoIndex.value == index
+                          //       ? Stack(
+                          //           children: [
+                          //             Positioned(
+                          //               bottom: 0,
+                          //               left: 0,
+                          //               right: 0,
+                          //               top: 0,
+                          //               child: Icon(
+                          //                 Icons.download_for_offline_rounded,
+                          //               ),
+                          //             ),
+                          //             SizedBox(
+                          //               height: 30,
+                          //               width: 30,
+                          //               child: CircularProgressIndicator(
+                          //                 value: _downloadProgress.value,
+                          //                 color: Color(0xFF7860DC),
+                          //                 backgroundColor: Color(0xFFDDD2FB),
+                          //               ),
+                          //             )
+                          //           ],
+                          //         )
+                          //       : Icon(
+                          //           Icons.download_for_offline_rounded,
+                          //         ),
+                          // ),
                         ),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 17,
-                          fontFamily: "Medium",
-                        ),
-                      ),
-                      // trailing: InkWell(
-                      //   onTap: () async {
-                      //     var directory =
-                      //         await getApplicationDocumentsDirectory();
-                      //     _currentVideoIndex.value = index;
-                      //     download(
-                      //         dio: Dio(),
-                      //         fileName: map['name'],
-                      //         url: map['url'],
-                      //         savePath:
-                      //             "${directory.path}/${map['name'].replaceAll(' ', '')}.mp4",
-                      //         topicName: map['name'],
-                      //         courseName: widget.courseName);
-                      //   },
-                      //   child: _currentVideoIndex.value == index
-                      //       ? Stack(
-                      //           children: [
-                      //             Positioned(
-                      //               bottom: 0,
-                      //               left: 0,
-                      //               right: 0,
-                      //               top: 0,
-                      //               child: Icon(
-                      //                 Icons.download_for_offline_rounded,
-                      //               ),
-                      //             ),
-                      //             SizedBox(
-                      //               height: 30,
-                      //               width: 30,
-                      //               child: CircularProgressIndicator(
-                      //                 value: _downloadProgress.value,
-                      //                 color: Color(0xFF7860DC),
-                      //                 backgroundColor: Color(0xFFDDD2FB),
-                      //               ),
-                      //             )
-                      //           ],
-                      //         )
-                      //       : Icon(
-                      //           Icons.download_for_offline_rounded,
-                      //         ),
-                      // ),
+                        ListTile(
+                          onTap: () {
+                            showAssignment = !showAssignment;
+                            _videoController!.pause();
+                            enablePauseScreen = !enablePauseScreen;
+                          },
+                          leading: Icon(Icons.assignment_ind_outlined),
+                          title: Text('Assignment 1.${index + 1}',
+                            textScaleFactor: min(
+                              horizontalScale,
+                              verticalScale,
+                            ),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 17,
+                              fontFamily: "Medium",
+                            ),),
+                        )
+                      ],
                     ),
                   );
                 });
