@@ -10,7 +10,6 @@ import 'package:cloudyml_app2/models/course_details.dart';
 import 'package:cloudyml_app2/models/video_details.dart';
 import 'package:cloudyml_app2/my_Courses.dart';
 import 'package:cloudyml_app2/screens/chat_screen.dart';
-import 'package:cloudyml_app2/screens/splash.dart';
 import 'package:cloudyml_app2/services/local_notificationservice.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -290,7 +289,7 @@ class MyApp extends StatelessWidget {
               primarySwatch: Colors.blue,
               // textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
             ),
-            home: splash(),
+            home: Authenticate(),
             routes: {
               "account": (_) => MyAccountPage(),
               "courses": (_) => HomeScreen(),

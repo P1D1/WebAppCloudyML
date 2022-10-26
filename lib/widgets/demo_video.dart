@@ -129,123 +129,131 @@ class _VideoPlayerCustomState extends State<VideoPlayerCustom> {
   ) {
     return Container(
       color: Color.fromARGB(114, 0, 0, 0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          ListTile(
-            leading: InkWell(
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: Icon(
-                Icons.arrow_back_ios_new,
-                color: Colors.white,
-              ),
-            ),
-            trailing: InkWell(
-              onTap: () {
-                showSettingsBottomsheet(
-                  context,
-                  horizontalScale,
-                  verticalScale,
-                  _controller!,
-                );
-                // var directory = await getApplicationDocumentsDirectory();
-                // download(
-                //   dio: Dio(),
-                //   fileName: data!['name'],
-                //   url: data!['url'],
-                //   savePath:
-                //       "${directory.path}/${data!['name'].replaceAll(' ', '')}.mp4",
-                //   topicName: data!['name'],
-                // );
-                // print(directory.path);
-              },
-              child: Icon(
-                Icons.settings,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              replay10(
-                videoController: _controller,
-              ),
-              !_isBuffering
-                  ? InkWell(
-                      onTap: () {
-                        if (_isPlaying) {
-                          setState(() {
-                            _controller!.pause();
-                          });
-                        } else {
-                          setState(() {
-                            enablePauseScreen = !enablePauseScreen;
-                            _controller!.play();
-                          });
-                        }
-                      },
-                      child: Icon(
-                        _isPlaying ? Icons.pause : Icons.play_arrow,
-                        color: Colors.white,
-                        size: 50,
-                      ),
-                    )
-                  : CircularProgressIndicator(
-                      color: Color.fromARGB(
-                        114,
-                        255,
-                        255,
-                        255,
-                      ),
-                    ),
-              fastForward10(
-                videoController: _controller,
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Container(
-                  // height: 10,
-                  child: VideoProgressIndicator(
-                    _controller!,
-                    allowScrubbing: true,
-                    colors: VideoProgressColors(
-                      backgroundColor: Color.fromARGB(74, 255, 255, 255),
-                      bufferedColor: Color(0xFFC0AAF5),
-                      playedColor: Color(0xFF7860DC),
-                    ),
-                  ),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            enablePauseScreen = !enablePauseScreen;
+            print("column");
+          });
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ListTile(
+              leading: InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Colors.white,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        timeElapsedString(),
-                        Text(
-                          '/${_controller!.value.duration.toString().substring(2, 7)}',
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
+              ),
+              trailing: InkWell(
+                onTap: () {
+                  showSettingsBottomsheet(
+                    context,
+                    horizontalScale,
+                    verticalScale,
+                    _controller!,
+                  );
+                  // var directory = await getApplicationDocumentsDirectory();
+                  // download(
+                  //   dio: Dio(),
+                  //   fileName: data!['name'],
+                  //   url: data!['url'],
+                  //   savePath:
+                  //       "${directory.path}/${data!['name'].replaceAll(' ', '')}.mp4",
+                  //   topicName: data!['name'],
+                  // );
+                  // print(directory.path);
+                },
+                child: Icon(
+                  Icons.settings,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                replay10(
+                  videoController: _controller,
+                ),
+                !_isBuffering
+                    ? InkWell(
+                        onTap: () {
+                          if (_isPlaying) {
+                            setState(() {
+                              _controller!.pause();
+                            });
+                          } else {
+                            setState(() {
+                              enablePauseScreen = !enablePauseScreen;
+                              _controller!.play();
+                            });
+                          }
+                        },
+                        child: Icon(
+                          _isPlaying ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white,
+                          size: 50,
                         ),
-                      ],
-                    ),
-                    fullScreenIcon(
-                      isPortrait: isPortrait,
-                    ),
-                  ],
+                      )
+                    : CircularProgressIndicator(
+                        color: Color.fromARGB(
+                          114,
+                          255,
+                          255,
+                          255,
+                        ),
+                      ),
+                fastForward10(
+                  videoController: _controller,
                 ),
               ],
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(
+                    // height: 10,
+                    child: VideoProgressIndicator(
+                      _controller!,
+                      allowScrubbing: true,
+                      colors: VideoProgressColors(
+                        backgroundColor: Color.fromARGB(74, 255, 255, 255),
+                        bufferedColor: Color(0xFFC0AAF5),
+                        playedColor: Color(0xFF7860DC),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          timeElapsedString(),
+                          Text(
+                            '/${_controller!.value.duration.toString().substring(2, 7)}',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                      fullScreenIcon(
+                        isPortrait: isPortrait,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

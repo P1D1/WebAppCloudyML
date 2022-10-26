@@ -67,6 +67,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   File? pickedFile;
 
+  String? filename;
+
   Uint8List? uploadedFile;
 
   String? pickedFileName;
@@ -337,8 +339,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
     try {
       result = await FilePicker.platform.pickFiles(
-          type: FileType.any,
-          allowCompression: true,
+        type: FileType.any,
+        allowCompression: true,
         withData: true,
       );
     } catch (e) {

@@ -797,6 +797,18 @@ Drawer dr(BuildContext context) {
           },
         ),
         InkWell(
+          child: ListTile(
+            title: Text('Assignments'),
+            leading: Icon(
+              Icons.assignment_ind_outlined,
+              color: HexColor('6153D3'),
+            ),
+          ),
+          onTap: () {
+
+          },
+        ),
+        InkWell(
           onTap: () {
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => PaymentHistory()));

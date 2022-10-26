@@ -29,14 +29,12 @@ class Authenticate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (_auth.currentUser != null) {
-
       return HomePage();
     } else {
       return Onboardew();
     }
   }
 }
-
 
 Future<User?> createAccount(
     String email, String password, String text, BuildContext context) async {
@@ -141,6 +139,7 @@ class GoogleSignInProvider extends ChangeNotifier {
   final googleSignIn = GoogleSignIn();
   GoogleSignInAccount? _user;
   GoogleSignInAccount get user => _user!;
+
   Future googleLogin(
     BuildContext context,
   ) async {

@@ -225,7 +225,7 @@ class _HomeState extends State<Home> {
             ),
             Padding(
               padding: EdgeInsets.only(
-                left: 20 * horizontalScale,
+                left: 5 * horizontalScale,
                 top: 20 * verticalScale,
               ),
               child: Text(
@@ -237,7 +237,7 @@ class _HomeState extends State<Home> {
                   fontSize: 23,
                   letterSpacing:
                       0 /*percentages not used in flutter. defaulting to zero*/,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -413,7 +413,7 @@ class _HomeState extends State<Home> {
             ),
             Padding(
               padding: EdgeInsets.only(
-                left: 20,
+                left: 10,
                 top: 10,
               ),
               child: Text(
@@ -426,7 +426,7 @@ class _HomeState extends State<Home> {
                     fontSize: 23,
                     letterSpacing:
                         0 /*percentages not used in flutter. defaulting to zero*/,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.bold,
                     height: 1),
               ),
             ),

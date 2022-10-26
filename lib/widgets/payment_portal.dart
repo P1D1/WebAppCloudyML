@@ -61,17 +61,26 @@ class PaymentButton extends StatefulWidget {
 }
 
 class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
+
+
   bool isPayInPartsPressed = false;
+
   bool isMinAmountCheckerPressed = false;
+
   bool isOutStandingAmountCheckerPressed = false;
+
   bool whetherMinAmtBtnEnabled = true;
+
   bool whetherOutstandingAmtBtnEnabled = false;
+
   var order_id;
 
   Map userData = Map<String, dynamic>();
+
   var _razorpay = Razorpay();
 
-  Future<String> intiateUpiTransaction(String appName) async {
+  Future<String> initiateUpiTransaction(String appName) async {
+
     String response = await UpiTransaction.initiateTransaction(
       app: appName,
       pa: 'cloudyml@icici',
@@ -96,7 +105,7 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
   FirebaseAuth _auth = FirebaseAuth.instance;
   String? id;
 
-  
+
   void loadCourses() async {
     await _firestore.collection("courses").doc(courseId).get().then((value) {
       print(_auth.currentUser!.displayName);
@@ -152,7 +161,7 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
   //   // Fluttertoast.showToast(msg: "Group Created");
   // }
 
-  void updateAmoutStringForUPI(bool isPayInPartsPressed,
+  void updateAmountStringForUPI(bool isPayInPartsPressed,
       bool isMinAmountCheckerPressed, bool isOutStandingAmountCheckerPressed) {
     if (isPayInPartsPressed) {
       if (isMinAmountCheckerPressed) {
@@ -170,7 +179,7 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
     }
   }
 
-  void updateAmoutStringForRP(bool isPayInPartsPressed,
+  void updateAmountStringForRP(bool isPayInPartsPressed,
       bool isMinAmountCheckerPressed, bool isOutStandingAmountCheckerPressed) {
     if (isPayInPartsPressed) {
       if (isMinAmountCheckerPressed) {
@@ -226,13 +235,19 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
   @override
   void initState() {
     super.initState();
+
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+
     getPayInPartsDetails();
-    updateAmoutStringForUPI(isPayInPartsPressed, isMinAmountCheckerPressed,
+
+    updateAmountStringForUPI(isPayInPartsPressed, isMinAmountCheckerPressed,
         isOutStandingAmountCheckerPressed);
-    updateAmoutStringForRP(isPayInPartsPressed, isMinAmountCheckerPressed,
+
+    updateAmountStringForRP(isPayInPartsPressed, isMinAmountCheckerPressed,
         isOutStandingAmountCheckerPressed);
   }
 
@@ -247,34 +262,40 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) async {
     showToast("Payment successful");
+
     addCoursetoUser(widget.courseId);
+
     loadCourses();
+
     updateCouponDetailsToUser(
       couponCodeText: widget.couponCodeText,
       courseBaughtId: widget.courseId,
       NoCouponApplied: widget.NoCouponApplied,
     );
+
     updatePayInPartsDetails(
       isPayInPartsPressed,
       isMinAmountCheckerPressed,
       isOutStandingAmountCheckerPressed,
     );
-    
+
     pushToHome();
 
     // disableMinAmtBtn();
     // enableoutStandingAmtBtn();
     print("Payment Done");
-    await AwesomeNotifications().createNotification(
-        content: NotificationContent(
-            id: 12345,
-            channelKey: 'image',
-            title: widget.courseName,
-            body: 'You bought ${widget.courseName}.Go to My courses.',
-            bigPicture: widget.courseImageUrl,
-            largeIcon: 'asset://assets/logo2.png',
-            notificationLayout: NotificationLayout.BigPicture,
-            displayOnForeground: true));
+
+    // await AwesomeNotifications().createNotification(
+    //     content: NotificationContent(
+    //         id: 12345,
+    //         channelKey: 'image',
+    //         title: widget.courseName,
+    //         body: 'You bought ${widget.courseName}.Go to My courses.',
+    //         bigPicture: widget.courseImageUrl,
+    //         largeIcon: 'asset://assets/logo2.png',
+    //         notificationLayout: NotificationLayout.BigPicture,
+    //         displayOnForeground: true));
+
     await Provider.of<UserProvider>(context, listen: false).addToNotificationP(
       title: widget.courseName,
       body: 'You bought ${widget.courseName}.Go to My courses.',
@@ -419,7 +440,7 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
 
   @override
   Widget build(BuildContext context) {
-    final userprovider = Provider.of<UserProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
     return Container(
       width: 350,
       decoration: BoxDecoration(
@@ -632,18 +653,18 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
                                                               isMinAmountCheckerPressed =
                                                                   !isMinAmountCheckerPressed;
                                                             });
-                                                            updateAmoutStringForUPI(
+                                                            updateAmountStringForUPI(
                                                                 isPayInPartsPressed,
                                                                 isMinAmountCheckerPressed,
                                                                 isOutStandingAmountCheckerPressed);
-                                                            updateAmoutStringForRP(
+                                                            updateAmountStringForRP(
                                                                 isPayInPartsPressed,
                                                                 isMinAmountCheckerPressed,
                                                                 isOutStandingAmountCheckerPressed);
                                                             print(
                                                                 isMinAmountCheckerPressed);
                                                             print(
-                                                                "Print payinparts:${isPayInPartsPressed}");
+                                                                "Print pay in parts:${isPayInPartsPressed}");
                                                             print(
                                                                 amountStringForUPI);
                                                           },
@@ -726,11 +747,11 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
                                                               isOutStandingAmountCheckerPressed =
                                                                   !isOutStandingAmountCheckerPressed;
                                                             });
-                                                            updateAmoutStringForUPI(
+                                                            updateAmountStringForUPI(
                                                                 isPayInPartsPressed,
                                                                 isMinAmountCheckerPressed,
                                                                 isOutStandingAmountCheckerPressed);
-                                                            updateAmoutStringForRP(
+                                                            updateAmountStringForRP(
                                                                 isPayInPartsPressed,
                                                                 isMinAmountCheckerPressed,
                                                                 isOutStandingAmountCheckerPressed);
@@ -898,17 +919,20 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
                         //   widget.courseId = widget.courseFetchedId;
                         // });
 
-                        updateAmoutStringForRP(
+                        updateAmountStringForRP(
                             isPayInPartsPressed,
                             isMinAmountCheckerPressed,
                             isOutStandingAmountCheckerPressed);
                         widget.updateCourseIdToCouponDetails();
+
                         order_id= await generateOrderId('rzp_live_ESC1ad8QCKo9zb',
                             'D5fscRQB6i7dwCQlZybecQND', amountStringForRp!);
 
                         print('order id is out--$order_id');
+
                         // Future.delayed(const Duration(milliseconds: 300), () {
                           print('order id is --$order_id');
+
                           var options = {
                             'key': 'rzp_live_ESC1ad8QCKo9zb',
                             'amount':
@@ -919,20 +943,20 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
                             'timeout': 300, //in seconds
                             'order_id': order_id,
                             'prefill': {
-                              'contact': userprovider.userModel!.mobile,
+                              'contact': userProvider.userModel!.mobile,
                               // '7003482660', //original number and email
-                              'email': userprovider.userModel!.email,
+                              'email': userProvider.userModel!.email,
                               // 'cloudyml.com@gmail.com'
                               // 'test@razorpay.com'
-                              'name':userprovider.userModel!.name
+                              'name':userProvider.userModel!.name
                             },
                             'notes':{
-                              'contact': userprovider.userModel!.mobile,
-                              'email': userprovider.userModel!.email,
-                              'name':userprovider.userModel!.name
+                              'contact': userProvider.userModel!.mobile,
+                              'email': userProvider.userModel!.email,
+                              'name':userProvider.userModel!.name
                             }
                           };
-                          _razorpay.open(options);
+                        _razorpay.open(options);
                         // });
                       },
                       child: Container(

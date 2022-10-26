@@ -19,7 +19,7 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
-  var amountcontroller = TextEditingController();
+  var amountController = TextEditingController();
   final TextEditingController couponCodeController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   // GlobalKey key = GlobalKey();
@@ -37,7 +37,7 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
   // declared below same for discount
   bool NoCouponApplied = true;
 
-  String finalamountToDisplay = "";
+  String finalAmountToDisplay = "";
 
   String finalAmountToPay = "";
 
@@ -67,7 +67,7 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
-                    height: 193 * max(verticalScale, horizontalScale),
+                    height: 75 * max(verticalScale, horizontalScale),
                   ),
                   Text(
                     'Course Details',
@@ -211,6 +211,7 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                                     SizedBox(
                                       width: 20,
                                     ),
+                                    //Total price of course
                                     Text(
                                       widget.map!['Course Price'],
                                       textScaleFactor:
@@ -241,6 +242,7 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                   SizedBox(
                     height: 30,
                   ),
+                  //coupon code is here
                   Text(
                     'Coupon Code',
                     textScaleFactor: min(horizontalScale, verticalScale),
@@ -256,73 +258,76 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                   SizedBox(
                     height: 10,
                   ),
-                  TextField(
-                    enabled: NoCouponApplied ? true : false,
-                    controller: couponCodeController,
-                    style: TextStyle(
-                      fontSize: 16 * min(horizontalScale, verticalScale),
-                      letterSpacing: 1.2,
-                      fontFamily: 'Medium',
-                    ),
-                    decoration: InputDecoration(
-                      // constraints: BoxConstraints(minHeight: 52, minWidth: 366),
-                      suffixIcon: TextButton(
-                        child: Text(
-                          'Apply',
-                          style: TextStyle(
-                            color: Color(0xFF7860DC),
-                            fontFamily: 'Medium',
-                            fontSize: 18 * min(horizontalScale, verticalScale),
-                            fontWeight: FontWeight.bold,
+                  Container(
+                    width: 366 * horizontalScale,
+                    child: TextField(
+                      enabled: NoCouponApplied ? true : false,
+                      controller: couponCodeController,
+                      style: TextStyle(
+                        fontSize: 16 * min(horizontalScale, verticalScale),
+                        letterSpacing: 1.2,
+                        fontFamily: 'Medium',
+                      ),
+                      decoration: InputDecoration(
+                        // constraints: BoxConstraints(minHeight: 52, minWidth: 366),
+                        suffixIcon: TextButton(
+                          child: Text(
+                            'Apply',
+                            style: TextStyle(
+                              color: Color(0xFF7860DC),
+                              fontFamily: 'Medium',
+                              fontSize: 18 * min(horizontalScale, verticalScale),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              NoCouponApplied = whetherCouponApplied(
+                                couponCodeText: couponCodeController.text,
+                              );
+                              couponAppliedResponse = whenCouponApplied(
+                                couponCodeText: couponCodeController.text,
+                              );
+                              finalAmountToDisplay = amountToDisplayAfterCCA(
+                                amountPayable: widget.map!['Amount Payable'],
+                                couponCodeText: couponCodeController.text,
+                              );
+                              finalAmountToPay = amountToPayAfterCCA(
+                                couponCodeText: couponCodeController.text,
+                                amountPayable: widget.map!['Amount Payable'],
+                              );
+                              discountedPrice = discountAfterCCA(
+                                  couponCodeText: couponCodeController.text,
+                                  amountPayable: widget.map!['Amount Payable']);
+                            });
+                          },
+                        ),
+                        hintText: 'Enter coupon code',
+                        fillColor: Colors.grey.shade100,
+                        filled: true,
+                        suffixIconConstraints:
+                            BoxConstraints(minHeight: 52, minWidth: 100),
+                        // contentPadding: EdgeInsets.symmetric(horizontal: 0.0,vertical: 0),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 2,
                           ),
                         ),
-                        onPressed: () {
-                          setState(() {
-                            NoCouponApplied = whetherCouponApplied(
-                              couponCodeText: couponCodeController.text,
-                            );
-                            couponAppliedResponse = whenCouponApplied(
-                              couponCodeText: couponCodeController.text,
-                            );
-                            finalamountToDisplay = amountToDisplayAfterCCA(
-                              amountPayable: widget.map!['Amount Payable'],
-                              couponCodeText: couponCodeController.text,
-                            );
-                            finalAmountToPay = amountToPayAfterCCA(
-                              couponCodeText: couponCodeController.text,
-                              amountPayable: widget.map!['Amount Payable'],
-                            );
-                            discountedPrice = discountAfterCCA(
-                                couponCodeText: couponCodeController.text,
-                                amountPayable: widget.map!['Amount Payable']);
-                          });
-                        },
-                      ),
-                      hintText: 'Enter coupon code',
-                      fillColor: Colors.grey.shade100,
-                      filled: true,
-                      suffixIconConstraints:
-                          BoxConstraints(minHeight: 52, minWidth: 100),
-                      // contentPadding: EdgeInsets.symmetric(horizontal: 0.0,vertical: 0),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(
-                          color: Colors.grey.shade300,
-                          width: 2,
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 2,
+                          ),
                         ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(
-                          color: Colors.grey.shade300,
-                          width: 2,
-                        ),
-                      ),
-                      disabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(
-                          color: Colors.grey.shade300,
-                          width: 2,
+                        disabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),
@@ -464,7 +469,7 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                                   child: Text(
                                     NoCouponApplied
                                         ? '₹${widget.map!["Amount Payable"]} /-'
-                                        : finalamountToDisplay,
+                                        : finalAmountToDisplay,
                                     style: TextStyle(
                                         color: Color.fromARGB(223, 48, 48, 49),
                                         fontFamily: 'Poppins',
@@ -494,8 +499,8 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                           .toString(),
                       buttonText: NoCouponApplied
                           ? 'Buy Now for ${widget.map!['Course Price']}'
-                          : 'Buy Now for ${finalamountToDisplay}',
-                      buttonTextForCode: "Buy Now for $finalamountToDisplay",
+                          : 'Buy Now for ${finalAmountToDisplay}',
+                      buttonTextForCode: "Buy Now for $finalAmountToDisplay",
                       changeState: () {
                         setState(() {
                           isPayButtonPressed = !isPayButtonPressed;
@@ -516,7 +521,8 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                         addCourseId();
                         print(NoCouponApplied);
                       },
-                      outStandingAmountString: (double.parse(NoCouponApplied
+                      outStandingAmountString: (
+                          double.parse(NoCouponApplied
                                   ? widget.map!['Amount_Payablepay']
                                   : finalAmountToPay) -
                               1000)

@@ -9,6 +9,7 @@ import 'package:cloudyml_app2/my_Courses.dart';
 import 'package:cloudyml_app2/homepage.dart';
 import 'package:cloudyml_app2/offline/offline_videos.dart';
 import 'package:cloudyml_app2/privacy_policy.dart';
+import 'package:cloudyml_app2/screens/assignment_tab_screen.dart';
 import 'package:cloudyml_app2/screens/groups_list.dart';
 import 'package:cloudyml_app2/store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,7 +19,11 @@ import 'package:hexcolor/hexcolor.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({
+    Key? key,
+  }) : super(key: key);
+
+  // final groupData;
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -45,25 +50,37 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    userData();
     insertToken();
     print('UID--${FirebaseAuth.instance.currentUser!.uid}');
     Provider.of<UserProvider>(context, listen: false).reloadUserModel();
   }
 
+  var ref = null;
 
+  userData() async {
+    ref = await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
 
-  void insertToken()
-  async {
+    print(ref.data()!["role"]);
+  }
+
+  void insertToken() async {
     print("insertToken");
     final token = await FirebaseMessaging.instance.getToken();
 
-    await FirebaseFirestore.instance.collection("Users").doc(FirebaseAuth.instance.currentUser!.uid).update(
-      {"token":token}
-    );
-    final data = await FirebaseFirestore.instance.collection("Users").doc(FirebaseAuth.instance.currentUser!.uid);
+    await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .update({"token": token});
+    final data = await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(FirebaseAuth.instance.currentUser!.uid);
 
-    final response = data.get().then((DocumentSnapshot doc){
-      final data2 = doc.data() as Map<String,dynamic>;
+    final response = data.get().then((DocumentSnapshot doc) {
+      final data2 = doc.data() as Map<String, dynamic>;
       print(data2);
     });
     print(response);
@@ -123,8 +140,9 @@ class _HomePageState extends State<HomePage> {
                   foregroundImage:
                       NetworkImage(userprovider.userModel?.image ?? ''),
                   backgroundColor: Colors.transparent,
-                  backgroundImage:
-                      CachedNetworkImageProvider('https://stratosphere.co.in/img/user.jpg',),
+                  backgroundImage: CachedNetworkImageProvider(
+                    'https://stratosphere.co.in/img/user.jpg',
+                  ),
                 ),
               ),
               decoration: BoxDecoration(
@@ -251,6 +269,26 @@ class _HomePageState extends State<HomePage> {
                 );
               },
             ),
+            //Assignments tab for mentors only
+            ref != null
+                ? ref.data()['role'] != 'mentor'
+                    ? InkWell(
+                        child: ListTile(
+                          title: Text('Assignments'),
+                          leading: Icon(
+                            Icons.assignment_ind_outlined,
+                            color: HexColor('6153D3'),
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Assignments()));
+                        },
+                      )
+                    : SizedBox()
+                : SizedBox(),
             InkWell(
               onTap: () {
                 Navigator.push(context,
@@ -400,7 +438,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
 
 // StreamBuilder<QuerySnapshot>(
 // stream: FirebaseFirestore.instance

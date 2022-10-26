@@ -349,7 +349,7 @@ class _VideoScreenState extends State<VideoScreen> {
                     ),
               Expanded(
                 flex: 2,
-                child: showAssignment ? Assignment_Screen() : Column(
+                child: showAssignment ? AssignmentScreen() : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
