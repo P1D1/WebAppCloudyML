@@ -43,7 +43,6 @@ class _HomePageState extends State<HomePage> {
   List<String> titles = [
     'Home',
     'Store',
-    'Offline Videos',
     'Chat',
   ];
   @override

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:html' as html;
+import 'dart:ui';
 import 'package:cloudyml_app2/MyAccount/myaccount.dart';
 import 'package:cloudyml_app2/Providers/AppProvider.dart';
 import 'package:cloudyml_app2/Providers/UserProvider.dart';
@@ -19,6 +20,8 @@ import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:renderer_switcher/renderer_switcher.dart';
+
+import 'homepage.dart';
 
 
 
@@ -276,6 +279,7 @@ class MyApp extends StatelessWidget {
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'CloudyML',
+            scrollBehavior: MyCustomScrollBehavior(),
             builder: (BuildContext context, Widget? widget) {
               ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
                 return Container();
@@ -289,7 +293,8 @@ class MyApp extends StatelessWidget {
               primarySwatch: Colors.blue,
               // textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
             ),
-            home: Authenticate(),
+            home:
+            Authenticate(),
             routes: {
               "account": (_) => MyAccountPage(),
               "courses": (_) => HomeScreen(),
@@ -301,11 +306,10 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class ScreenController extends StatelessWidget {
-  const ScreenController({Key? key}) : super(key: key);
-
+class MyCustomScrollBehavior extends MaterialScrollBehavior {
   @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
+  Set<PointerDeviceKind> get dragDevices => {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+  };
 }

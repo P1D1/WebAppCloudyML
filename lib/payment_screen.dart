@@ -7,6 +7,8 @@ import 'package:cloudyml_app2/widgets/payment_portal.dart';
 import 'package:flutter/material.dart';
 import 'package:dotted_line/dotted_line.dart';
 
+import 'models/offer_model.dart';
+
 class PaymentScreen extends StatefulWidget {
   final Map<String, dynamic>? map;
   final bool isItComboCourse;
@@ -27,13 +29,25 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
   ValueNotifier<bool> showBottomSheet = ValueNotifier(false);
   // VoidCallback? _showPersistentBottomSheetCallBack;
 
+  //offer model implementation
+  var offerData = [
+    OfferModel(
+        id: 1,
+        title: 'Diwali offer',
+        discount: "Discount",
+        discountPrice: "300"
+    ),
+  ];
+
   String? id;
 
   String couponAppliedResponse = "";
 
   //If it is false amountpayble showed will be the amount fetched from db
+
   //If it is true which will be set to true if when right coupon code is
-  //applied and the amountpayble will be set using appludiscount to the finalamountpayble variable
+
+  //applied and the amount payable will be set using apply discount to the final amount payable variable
   // declared below same for discount
   bool NoCouponApplied = true;
 

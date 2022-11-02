@@ -11,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:lottie/lottie.dart';
@@ -542,7 +543,7 @@ class _OnboardewState extends State<Onboardew> {
                           SizedBox(
                             height: 10,
                           ),
-                          ElevatedButton(
+                          _isLoading ? Loading() : ElevatedButton(
                             child: Center(
                               child: Text(
                                 'Log in',
@@ -558,6 +559,10 @@ class _OnboardewState extends State<Onboardew> {
                               primary: HexColor('8346E1'),
                             ),
                             onPressed: () {
+                              if(email.text.isEmpty || pass.text.isEmpty) {
+                                Fluttertoast.showToast(msg: "Please enter email or password");
+                              }
+
                               if (_loginkey.currentState!.validate()) {
                                 setState(() {
                                   _isLoading = true;

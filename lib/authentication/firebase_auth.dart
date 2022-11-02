@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
@@ -161,6 +162,7 @@ class GoogleSignInProvider extends ChangeNotifier {
       print(googleAuth.accessToken);
       print("Printed");
       await FirebaseAuth.instance.signInWithCredential(credential);
+
       showToast('Please wait while we are fetching info...');
 
       //This is check if User already exist in Database in User Collection
@@ -223,7 +225,7 @@ class GoogleSignInProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       print(e.toString());
-      showToast(e.toString());
+      Fluttertoast.showToast(msg: "Please try again");
       return false;
     }
   }
