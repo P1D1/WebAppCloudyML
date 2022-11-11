@@ -22,6 +22,7 @@ import 'dart:convert' as convert;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../home.dart';
+import '../screens/offerscreen.dart';
 import '../widgets/loading.dart';
 
 class Onboardew extends StatefulWidget {
@@ -136,15 +137,15 @@ class _OnboardewState extends State<Onboardew> {
                         ],
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(25.0),
+                        padding: const EdgeInsets.all(20.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Image.asset(
                               'assets/logo.png',
-                              height: 60,
-                              width: 100,
+                              height: 75,
+                              width: 110,
                             ),
                             SizedBox(
                               height: 5,

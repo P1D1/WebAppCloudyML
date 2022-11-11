@@ -51,6 +51,8 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
   // declared below same for discount
   bool NoCouponApplied = true;
 
+  String couponCode = 'diwali10';
+
   String finalAmountToDisplay = "";
 
   String finalAmountToPay = "";
@@ -272,6 +274,7 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                   SizedBox(
                     height: 10,
                   ),
+                  //this is Coupon Code details window
                   Container(
                     width: 366 * horizontalScale,
                     child: TextField(
@@ -295,25 +298,36 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                             ),
                           ),
                           onPressed: () {
+
+
+
                             setState(() {
+
                               NoCouponApplied = whetherCouponApplied(
                                 couponCodeText: couponCodeController.text,
                               );
+
                               couponAppliedResponse = whenCouponApplied(
                                 couponCodeText: couponCodeController.text,
                               );
+
                               finalAmountToDisplay = amountToDisplayAfterCCA(
                                 amountPayable: widget.map!['Amount Payable'],
                                 couponCodeText: couponCodeController.text,
                               );
+
+
                               finalAmountToPay = amountToPayAfterCCA(
                                 couponCodeText: couponCodeController.text,
                                 amountPayable: widget.map!['Amount Payable'],
                               );
+
+
                               discountedPrice = discountAfterCCA(
                                   couponCodeText: couponCodeController.text,
                                   amountPayable: widget.map!['Amount Payable']);
                             });
+
                           },
                         ),
                         hintText: 'Enter coupon code',
@@ -349,6 +363,7 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                   SizedBox(
                     height: 40,
                   ),
+                  //this is Bill details window
                   Text(
                     'Bill Details',
                     textScaleFactor: min(horizontalScale, verticalScale),
@@ -445,7 +460,7 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                                 Expanded(
                                   child: Text(
                                     NoCouponApplied
-                                        ? '₹${widget.map!["Discount"]} /-'
+                                        ? '₹${widget.map!["Discount"]}/-'
                                         : discountedPrice,
                                     style: TextStyle(
                                         color: Color.fromARGB(223, 48, 48, 49),
@@ -482,7 +497,7 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                                 Expanded(
                                   child: Text(
                                     NoCouponApplied
-                                        ? '₹${widget.map!["Amount Payable"]} /-'
+                                        ? '${widget.map!["Amount Payable"]}'
                                         : finalAmountToDisplay,
                                     style: TextStyle(
                                         color: Color.fromARGB(223, 48, 48, 49),
@@ -506,9 +521,12 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
                   ),
                   Center(
                     child: PaymentButton(
-                      amountString: (double.parse(NoCouponApplied
+                      amountString: (
+                          double.parse(
+                              NoCouponApplied
                                   ? widget.map!['Amount_Payablepay']
-                                  : finalAmountToPay) *
+                                  : finalAmountToPay
+                          ) *
                               100)
                           .toString(),
                       buttonText: NoCouponApplied

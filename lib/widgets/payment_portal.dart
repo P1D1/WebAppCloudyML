@@ -1,5 +1,8 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:razorpay_web/razorpay_web.dart';
+import 'package:universal_io/io.dart';
 import 'package:cloudyml_app2/Providers/UserProvider.dart';
 import 'package:cloudyml_app2/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,7 +11,6 @@ import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:upi_plugin/upi_plugin.dart';
 import 'package:cloudyml_app2/widgets/coupon_code.dart';
 import 'dart:convert';
@@ -105,6 +107,9 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
   FirebaseAuth _auth = FirebaseAuth.instance;
   String? id;
 
+  void openCheckout() async {
+
+  }
 
   void loadCourses() async {
     await _firestore.collection("courses").doc(courseId).get().then((value) {
@@ -212,7 +217,8 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
     var data =
         '{ "amount": $amount, "currency": "INR", "receipt": "receipt#R1", "payment_capture": 1 }'; // as per my experience the receipt doesn't play any role in helping you generate a certain pattern in your Order ID!!
 
-    var res = await http.post(Uri.parse('https://api.razorpay.com/v1/orders'),
+    var res = await http.post(
+        Uri.parse('https://api.razorpay.com/v1/orders'),
         headers: headers, body: data);
     if (res.statusCode != 200)
       throw Exception('http.post error: statusCode= ${res.statusCode}');
@@ -640,7 +646,7 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
                                                                       .only(
                                                                   left: 20),
                                                           child: Text(
-                                                              'Pay  ₹1000.0/-'),
+                                                              'Pay ₹1000.0/-'),
                                                         ),
                                                         InkWell(
                                                           onTap: () {
@@ -915,6 +921,32 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
                     // ),
                     InkWell(
                       onTap: () async {
+
+                        var options = {
+
+                          'key': 'rzp_live_ESC1ad8QCKo9zb',
+                          'amount':
+                          amountStringForRp, //amount is paid in paises so pay in multiples of 100
+
+                          'name': widget.courseName,
+                          'description': widget.courseDescription,
+                          'timeout': 300, //in seconds
+                          'order_id': order_id,
+                          'prefill': {
+                            'contact': userProvider.userModel!.mobile,
+                            // '7003482660', //original number and email
+                            'email': userProvider.userModel!.email,
+                            // 'cloudyml.com@gmail.com'
+                            // 'test@razorpay.com'
+                            'name':userProvider.userModel!.name
+                          },
+                          'notes':{
+                            'contact': userProvider.userModel!.mobile,
+                            'email': userProvider.userModel!.email,
+                            'name':userProvider.userModel!.name
+                          }
+                        };
+
                         // setState(() {
                         //   widget.courseId = widget.courseFetchedId;
                         // });
@@ -925,7 +957,7 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
                             isOutStandingAmountCheckerPressed);
                         widget.updateCourseIdToCouponDetails();
 
-                        order_id= await generateOrderId('rzp_live_ESC1ad8QCKo9zb',
+                        order_id = await generateOrderId('rzp_live_ESC1ad8QCKo9zb',
                             'D5fscRQB6i7dwCQlZybecQND', amountStringForRp!);
 
                         print('order id is out--$order_id');
@@ -933,30 +965,12 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
                         // Future.delayed(const Duration(milliseconds: 300), () {
                           print('order id is --$order_id');
 
-                          var options = {
-                            'key': 'rzp_live_ESC1ad8QCKo9zb',
-                            'amount':
-                                amountStringForRp, //amount is paid in paises so pay in multiples of 100
+                          try{
+                            _razorpay.open(options);
+                          }catch (e){
+                            Fluttertoast.showToast(msg: e.toString());
+                          }
 
-                            'name': widget.courseName,
-                            'description': widget.courseDescription,
-                            'timeout': 300, //in seconds
-                            'order_id': order_id,
-                            'prefill': {
-                              'contact': userProvider.userModel!.mobile,
-                              // '7003482660', //original number and email
-                              'email': userProvider.userModel!.email,
-                              // 'cloudyml.com@gmail.com'
-                              // 'test@razorpay.com'
-                              'name':userProvider.userModel!.name
-                            },
-                            'notes':{
-                              'contact': userProvider.userModel!.mobile,
-                              'email': userProvider.userModel!.email,
-                              'name':userProvider.userModel!.name
-                            }
-                          };
-                        _razorpay.open(options);
                         // });
                       },
                       child: Container(

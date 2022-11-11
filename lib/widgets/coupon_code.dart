@@ -1,14 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 
 class CouponCodeMixin {
+
   String whenCouponApplied({required String couponCodeText}) {
+
     String couponAppliedResponse;
+
     if (couponCodeText.isNotEmpty) {
+
       if (couponCodeText.toLowerCase() == 'save10' ||
           couponCodeText.toLowerCase() == 'parts2') {
-        couponAppliedResponse = 'Voucher is applied !';
+
+        couponAppliedResponse = 'Voucher is applied!';
+
       } else {
         couponAppliedResponse = 'Code is invalid.';
       }
@@ -18,9 +23,12 @@ class CouponCodeMixin {
     return couponAppliedResponse;
   }
 
-  bool whetherCouponApplied({required String couponCodeText}) {
+  bool whetherCouponApplied ({required String couponCodeText}) {
+
     bool NoCouponApplied = true;
+
     if (couponCodeText.toLowerCase() == 'save10') {
+
       NoCouponApplied = false;
     } else if (couponCodeText.toLowerCase() == 'parts2') {
       NoCouponApplied = false;
@@ -30,6 +38,7 @@ class CouponCodeMixin {
 
   String? whichCouponCode({required String couponCodeText}) {
     if (couponCodeText.toLowerCase() == 'parts2') return 'parts2';
+    return null;
   }
 
   // void applydiscount(
@@ -50,17 +59,17 @@ class CouponCodeMixin {
 
   String amountToDisplayAfterCCA(
       {required String couponCodeText, required String amountPayable}) {
-    String finalamountToDisplay = "";
+    String finalAmountToDisplay = "";
     if (couponCodeText.isNotEmpty) {
       if (couponCodeText.toLowerCase() == 'save10') {
-        finalamountToDisplay =
+        finalAmountToDisplay =
             '₹${(double.parse(amountPayable) * 0.9).toStringAsFixed(2)} /-';
       } else if (couponCodeText.toLowerCase() == 'parts2') {
-        finalamountToDisplay =
+        finalAmountToDisplay =
             '₹${double.parse(amountPayable).toStringAsFixed(2)} /-';
       }
     }
-    return finalamountToDisplay;
+    return finalAmountToDisplay;
   }
 
   String amountToPayAfterCCA(
@@ -92,9 +101,10 @@ class CouponCodeMixin {
   }
 
   void updateCouponDetailsToUser(
-      {required String courseBaughtId,
-      required String couponCodeText,
-      required bool NoCouponApplied}) async {
+      { required String courseBaughtId,
+        required String couponCodeText,
+        required bool NoCouponApplied}
+      ) async {
     bool couponCodeDetailsExists = await checkIfCouponDetailsExist();
 
     print(couponCodeDetailsExists);
@@ -123,11 +133,14 @@ class CouponCodeMixin {
   }
 
   Future<bool> checkIfCouponDetailsExist() async {
+
     bool couponCodeDetailsExists;
+
     DocumentSnapshot userDs = await FirebaseFirestore.instance
         .collection('Users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
+
     Map userFields = userDs.data() as Map<String, dynamic>;
 
     if (userFields.containsKey('couponCodeDetails')) {

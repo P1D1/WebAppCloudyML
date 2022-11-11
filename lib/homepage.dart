@@ -13,6 +13,7 @@ import 'package:cloudyml_app2/pages/notificationpage.dart';
 import 'package:cloudyml_app2/payments_history.dart';
 import 'package:cloudyml_app2/privacy_policy.dart';
 import 'package:cloudyml_app2/screens/assignment_tab_screen.dart';
+import 'package:cloudyml_app2/screens/image_page.dart';
 import 'package:cloudyml_app2/store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -144,6 +145,7 @@ class _HomeState extends State<Home> {
     futureFiles = FirebaseApi.listAll('reviews/');
     getCourseName();
     dbCheckerForPayInParts();
+    userData();
 
   }
 
@@ -341,18 +343,14 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                     onTap: () async {
-                      Navigator.push(
+                      Navigator.pushNamed(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => HomeScreen(),
-                        ),
+                        '/courses'
                       );
                     },
                   ),
                   //Assignments tab for mentors only
-                  ref != null
-                      ? ref.data()['role'] != 'mentor'
-                          ? InkWell(
+                  ref.data() != null && ref.data()!["role"] == 'mentor' ? InkWell(
                               child: ListTile(
                                 title: Text('Assignments'),
                                 leading: Icon(
@@ -366,15 +364,12 @@ class _HomeState extends State<Home> {
                                     MaterialPageRoute(
                                         builder: (context) => Assignments()));
                               },
-                            )
-                          : SizedBox()
-                      : SizedBox(),
+                            ) : Container()
+                         ,
                   InkWell(
                     onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => PaymentHistory()));
+                      Navigator.pushNamed(
+                          context, '/paymenthistory');
                     },
                     child: ListTile(
                       title: Text('Payment History'),
@@ -477,7 +472,7 @@ class _HomeState extends State<Home> {
               children: [
                 Container(
                   width: screenWidth,
-                  height: screenHeight,
+                  height: screenHeight/1.2,
                   decoration: BoxDecoration(
                     image: DecorationImage(
                         image: AssetImage('assets/homepage/newBGImage.png'),
@@ -509,7 +504,7 @@ class _HomeState extends State<Home> {
                             style: textStyle,
                           ),
                           SizedBox(
-                            width: horizontalScale * 275,
+                            width: horizontalScale * 300,
                           ),
                           constraints.maxWidth < 800
                               ? Expanded(
@@ -554,7 +549,7 @@ class _HomeState extends State<Home> {
                         top: 125,
                         left: 75,
                         child: Container(
-                            height: screenHeight / 3,
+                            height: screenHeight / 3.5,
                             width: screenWidth / 2.5,
                             child: Image.network(
                               'https://firebasestorage.googleapis.com/v0/b/cloudyml-app.appspot.com/o/test_developer%2FGroup%20162.png?alt=media&token=6e3f0646-61b4-4897-ae9d-9ef3600676e1',
@@ -784,6 +779,37 @@ class _HomeState extends State<Home> {
                                                                         .w500,
                                                                 height: 1),
                                                           ),
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(top: 5.0, bottom: 5),
+                                                            child: Align(
+                                                              alignment:
+                                                              Alignment.topLeft,
+                                                              child: Image.asset(
+                                                                'assets/Rating.png',
+                                                                fit: BoxFit.fill,
+                                                                height: 10,
+                                                                width: 100,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Align(
+                                                            alignment: Alignment.topLeft,
+                                                            child: Text(
+                                                              "${course[index]
+                                                                  .courseLanguage} || ${course[index]
+                                                                  .numOfVideos} Videos",
+                                                              style: TextStyle(
+                                                                  color: HexColor(
+                                                                      "2C2C2C"),
+                                                                  fontFamily:
+                                                                  'Medium',
+                                                                  fontSize: 12,
+                                                                  fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                                  height: 1),
+                                                            ),
+                                                          ),
                                                           SizedBox(
                                                             height: 10,
                                                           ),
@@ -807,7 +833,7 @@ class _HomeState extends State<Home> {
                                                               ),
                                                               Expanded(
                                                                 child: Text(
-                                                                    "${((course.length / int.parse(course[index].numOfVideos)) * 100).roundToDouble()}%"),
+                                                                    "${((course.length / int.parse(course[index].numOfVideos)) * 100).roundToDouble()}%", style: TextStyle(fontSize: 10),),
                                                               )
                                                             ],
                                                           ),
@@ -901,8 +927,18 @@ class _HomeState extends State<Home> {
                                           ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(12),
-                                              child: Image.network(
-                                                  files[index].url)),
+                                              child: InkWell(
+                                                onTap: () {
+                                                  final file = files[index];
+                                                  Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                      builder: (context) => ImagePage(file: file),
+                                                    ),
+                                                  );
+                                                },
+                                                child: Image.network(
+                                                    files[index].url),
+                                              )),
                                       options: CarouselOptions(
                                         autoPlay: true,
                                         enableInfiniteScroll: true,
@@ -947,12 +983,11 @@ class _HomeState extends State<Home> {
                               ),
                             )),
                       ),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Expanded(
-                          child: Container(
-                            margin: EdgeInsets.only(top: 150, bottom: 50),
-                            height: screenHeight / 2,
+                      Expanded(
+                        child: Container(
+                          margin: EdgeInsets.only(top: 75, bottom: 50),
+                          height: screenHeight / 2,
+                          child: Center(
                             child: ListView.builder(
                                 shrinkWrap: true,
                                 scrollDirection: Axis.horizontal,
@@ -964,12 +999,9 @@ class _HomeState extends State<Home> {
                                   return InkWell(
                                     onTap: () {
                                       setState(() {
-                                        print(
-                                            "Screen width is  ${screenWidth / 7}");
                                         courseId =
                                             course[index].courseDocumentId;
                                       });
-
                                       print(courseId);
                                       if (course[index].isItComboCourse) {
                                         Navigator.push(
@@ -990,9 +1022,11 @@ class _HomeState extends State<Home> {
                                         );
                                       }
                                     },
-                                    child: Padding(
+                                    child:
+                                    course[index].isItComboCourse
+                                        ? Padding(
                                       padding: const EdgeInsets.all(10.0),
-                                      child: Container(
+                                          child: Container(
                                         width: screenWidth / 5,
                                         height: screenHeight / 2,
                                         decoration: BoxDecoration(
@@ -1161,7 +1195,7 @@ class _HomeState extends State<Home> {
                                           ],
                                         ),
                                       ),
-                                    ),
+                                    ) : Container(),
                                   );
                                 }),
                           ),
@@ -1170,155 +1204,155 @@ class _HomeState extends State<Home> {
                     ],
                   ),
                 ),
-                Container(
-                  width: screenWidth,
-                  height: screenHeight / 3,
-                  color: Colors.white,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: screenWidth / 2.4,
-                        height: screenHeight / 5.5,
-                        decoration: BoxDecoration(
-                            color: HexColor("FFF4CB"),
-                            border: Border.all(
-                              color: HexColor('BE9400'),
-                              width: 1,
-                            ),
-                            borderRadius: BorderRadius.circular(10)),
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  top: 10, bottom: 10, left: 20, right: 20),
-                              child: Image.network(
-                                "https://firebasestorage.googleapis.com/v0/b/cloudyml-app.appspot.com/o/test_developer%2FdownloadLogo.png?alt=media&token=031e6f59-cbc4-4c6a-a735-db14da7ec1fd",
-                                fit: BoxFit.fill,
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 10.0, right: 20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Download The App Now!',
-                                    style: TextStyle(
-                                        color: HexColor("C19700"),
-                                        fontFamily: 'Poppins',
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16),
-                                  ),
-                                  SizedBox(height: 8,),
-                                  Text(
-                                    'Learn new skill anywhere any time',
-                                    style: TextStyle(
-                                        color: HexColor("231F20"),
-                                        fontFamily: 'Poppins',
-                                        fontSize: 12),
-                                  ),
-                                  SizedBox(height: 10,),
-                                  Row(
-                                    children: [
-                                      Container(
-                                        child: Image.network(
-                                          "https://firebasestorage.googleapis.com/v0/b/cloudyml-app.appspot.com/o/test_developer%2FplaystoreIcon.png?alt=media&token=526c9fc9-0ec4-4b89-b991-cb42e272a1bd",
-                                          fit: BoxFit.fill,
-                                        ),
-                                      ),
-                                      SizedBox(width: 5,),
-                                      Container(
-                                        child: Image.network(
-                                          "https://firebasestorage.googleapis.com/v0/b/cloudyml-app.appspot.com/o/test_developer%2FappStoreLogo.png?alt=media&token=bc836ab8-451e-402b-9c48-cb16d02e9861",
-                                          fit: BoxFit.fill,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 20,
-                      ),
-                      Container(
-                        width: screenWidth / 2.4,
-                        height: screenHeight / 5.5,
-                        decoration: BoxDecoration(
-                            color: HexColor("CBE9FF"),
-                            border: Border.all(
-                              color: HexColor('007EDA'),
-                              width: 1,
-                            ),
-                            borderRadius: BorderRadius.circular(10)),
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  top: 10, bottom: 10, left: 20, right: 20),
-                              child: Image.network(
-                                "https://firebasestorage.googleapis.com/v0/b/cloudyml-app.appspot.com/o/test_developer%2Freward.png?alt=media&token=4266fe1f-8875-4c52-8e83-42e65a08fb4c",
-                                fit: BoxFit.fill,
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                              const EdgeInsets.only(top: 10.0, right: 20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Learn, Sell & Earn',
-                                    style: TextStyle(
-                                        color: HexColor("007EDA"),
-                                        fontFamily: 'Poppins',
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16),
-                                  ),
-                                  SizedBox(height: 8,),
-                                  Text(
-                                    'Join our affiliate program and grow with us',
-                                    style: TextStyle(
-                                        color: HexColor("231F20"),
-                                        fontFamily: 'Poppins',
-                                        fontSize: 10),
-                                  ),
-                                  SizedBox(height: 10,),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        width: 1.5,
-                                      ),
-                                      borderRadius: BorderRadius.circular(25),
-                                    ),
-                                    child: ElevatedButton(
-                                        onPressed: () {},
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: HexColor('CBE9FF'),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(25),
-                                          )
-                                        ),
-                                        child: Text("Explore More",
-                                          style:  TextStyle(
-                                            fontSize: 12,
-                                      color: HexColor("2C2C2C"),
-                                    ),)),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // Container(
+                //   width: screenWidth,
+                //   height: screenHeight / 3,
+                //   color: Colors.white,
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //     children: [
+                //       Container(
+                //         width: screenWidth / 2.4,
+                //         height: screenHeight / 5.5,
+                //         decoration: BoxDecoration(
+                //             color: HexColor("FFF4CB"),
+                //             border: Border.all(
+                //               color: HexColor('BE9400'),
+                //               width: 1,
+                //             ),
+                //             borderRadius: BorderRadius.circular(10)),
+                //         child: Row(
+                //           children: [
+                //             Padding(
+                //               padding: const EdgeInsets.only(
+                //                   top: 10, bottom: 10, left: 20, right: 20),
+                //               child: Image.network(
+                //                 "https://firebasestorage.googleapis.com/v0/b/cloudyml-app.appspot.com/o/test_developer%2FdownloadLogo.png?alt=media&token=031e6f59-cbc4-4c6a-a735-db14da7ec1fd",
+                //                 fit: BoxFit.fill,
+                //               ),
+                //             ),
+                //             Padding(
+                //               padding:
+                //                   const EdgeInsets.only(top: 10.0, right: 20),
+                //               child: Column(
+                //                 crossAxisAlignment: CrossAxisAlignment.start,
+                //                 children: [
+                //                   Text(
+                //                     'Download The App Now!',
+                //                     style: TextStyle(
+                //                         color: HexColor("C19700"),
+                //                         fontFamily: 'Poppins',
+                //                         fontWeight: FontWeight.bold,
+                //                         fontSize: 16),
+                //                   ),
+                //                   SizedBox(height: 8,),
+                //                   Text(
+                //                     'Learn new skill anywhere any time',
+                //                     style: TextStyle(
+                //                         color: HexColor("231F20"),
+                //                         fontFamily: 'Poppins',
+                //                         fontSize: 12),
+                //                   ),
+                //                   SizedBox(height: 10,),
+                //                   Row(
+                //                     children: [
+                //                       Container(
+                //                         child: Image.network(
+                //                           "https://firebasestorage.googleapis.com/v0/b/cloudyml-app.appspot.com/o/test_developer%2FplaystoreIcon.png?alt=media&token=526c9fc9-0ec4-4b89-b991-cb42e272a1bd",
+                //                           fit: BoxFit.fill,
+                //                         ),
+                //                       ),
+                //                       SizedBox(width: 5,),
+                //                       Container(
+                //                         child: Image.network(
+                //                           "https://firebasestorage.googleapis.com/v0/b/cloudyml-app.appspot.com/o/test_developer%2FappStoreLogo.png?alt=media&token=bc836ab8-451e-402b-9c48-cb16d02e9861",
+                //                           fit: BoxFit.fill,
+                //                         ),
+                //                       ),
+                //                     ],
+                //                   ),
+                //                 ],
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //       ),
+                //       SizedBox(
+                //         width: 20,
+                //       ),
+                //       Container(
+                //         width: screenWidth / 2.4,
+                //         height: screenHeight / 5.5,
+                //         decoration: BoxDecoration(
+                //             color: HexColor("CBE9FF"),
+                //             border: Border.all(
+                //               color: HexColor('007EDA'),
+                //               width: 1,
+                //             ),
+                //             borderRadius: BorderRadius.circular(10)),
+                //         child: Row(
+                //           children: [
+                //             Padding(
+                //               padding: const EdgeInsets.only(
+                //                   top: 10, bottom: 10, left: 20, right: 20),
+                //               child: Image.network(
+                //                 "https://firebasestorage.googleapis.com/v0/b/cloudyml-app.appspot.com/o/test_developer%2Freward.png?alt=media&token=4266fe1f-8875-4c52-8e83-42e65a08fb4c",
+                //                 fit: BoxFit.fill,
+                //               ),
+                //             ),
+                //             Padding(
+                //               padding:
+                //               const EdgeInsets.only(top: 10.0, right: 20),
+                //               child: Column(
+                //                 crossAxisAlignment: CrossAxisAlignment.start,
+                //                 children: [
+                //                   Text(
+                //                     'Learn, Sell & Earn',
+                //                     style: TextStyle(
+                //                         color: HexColor("007EDA"),
+                //                         fontFamily: 'Poppins',
+                //                         fontWeight: FontWeight.bold,
+                //                         fontSize: 16),
+                //                   ),
+                //                   SizedBox(height: 8,),
+                //                   Text(
+                //                     'Join our affiliate program and grow with us',
+                //                     style: TextStyle(
+                //                         color: HexColor("231F20"),
+                //                         fontFamily: 'Poppins',
+                //                         fontSize: 10),
+                //                   ),
+                //                   SizedBox(height: 10,),
+                //                   Container(
+                //                     decoration: BoxDecoration(
+                //                       border: Border.all(
+                //                         width: 1.5,
+                //                       ),
+                //                       borderRadius: BorderRadius.circular(25),
+                //                     ),
+                //                     child: ElevatedButton(
+                //                         onPressed: () {},
+                //                         style: ElevatedButton.styleFrom(
+                //                           backgroundColor: HexColor('CBE9FF'),
+                //                           shape: RoundedRectangleBorder(
+                //                             borderRadius: BorderRadius.circular(25),
+                //                           )
+                //                         ),
+                //                         child: Text("Explore More",
+                //                           style:  TextStyle(
+                //                             fontSize: 12,
+                //                       color: HexColor("2C2C2C"),
+                //                     ),)),
+                //                   )
+                //                 ],
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           );

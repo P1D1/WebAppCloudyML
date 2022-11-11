@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/MyAccount/myaccount.dart';
 import 'package:cloudyml_app2/Providers/AppProvider.dart';
 import 'package:cloudyml_app2/Providers/UserProvider.dart';
@@ -10,6 +11,8 @@ import 'package:cloudyml_app2/authentication/firebase_auth.dart';
 import 'package:cloudyml_app2/models/course_details.dart';
 import 'package:cloudyml_app2/models/video_details.dart';
 import 'package:cloudyml_app2/my_Courses.dart';
+import 'package:cloudyml_app2/payment_screen.dart';
+import 'package:cloudyml_app2/payments_history.dart';
 import 'package:cloudyml_app2/screens/chat_screen.dart';
 import 'package:cloudyml_app2/services/local_notificationservice.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -21,6 +24,7 @@ import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:renderer_switcher/renderer_switcher.dart';
 
+import 'globals.dart';
 import 'homepage.dart';
 
 
@@ -102,7 +106,36 @@ Future<void> main() async {
 
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+
+  Map<String, dynamic> courseMap = {};
+  String coursePrice = "";
+
+  void getCourseName() async {
+    await FirebaseFirestore.instance
+        .collection('courses')
+        .doc(courseId)
+        .get()
+        .then((value) {
+      setState(() {
+        courseMap = value.data()!;
+        coursePrice = value.data()!['Course Price'];
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCourseName();
+  }
+
   @override
   Widget build(BuildContext context) {
     // showNoInternet() {
@@ -243,7 +276,7 @@ class MyApp extends StatelessWidget {
         reverseAnimation: StyledToastAnimation.slideToBottom,
         startOffset: Offset(0.0, 3.0),
         reverseEndOffset: Offset(0.0, 3.0),
-        duration: Duration(seconds: 3),
+        duration: Duration(seconds: 5),
         animDuration: Duration(milliseconds: 500),
         alignment: Alignment.center,
         toastPositions: StyledToastPosition.bottom,
@@ -255,7 +288,7 @@ class MyApp extends StatelessWidget {
         isIgnoring: true,
         child: MultiProvider(
           providers: [
-            ChangeNotifierProvider(create: (_)=>ChatScreenNotifier(),child: ChatScreen()),
+            ChangeNotifierProvider(create: (_)=> ChatScreenNotifier(),child: ChatScreen()),
             ChangeNotifierProvider.value(value: UserProvider.initialize()),
             ChangeNotifierProvider.value(value: AppProvider()),
             StreamProvider<List<CourseDetails>>.value(
@@ -293,11 +326,12 @@ class MyApp extends StatelessWidget {
               primarySwatch: Colors.blue,
               // textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
             ),
-            home:
-            Authenticate(),
+            initialRoute: '/',
             routes: {
-              "account": (_) => MyAccountPage(),
-              "courses": (_) => HomeScreen(),
+              "/": (context) =>  Authenticate(),
+              "/courses": (context) => const HomeScreen(),
+              "/paymentscreen" : (context) => PaymentScreen(map: courseMap, isItComboCourse: false),
+              "/paymenthistory" : (context) => PaymentHistory(),
             },
           ),
         ),

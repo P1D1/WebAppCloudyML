@@ -34,6 +34,7 @@ class _HomePageState extends State<HomePage> {
   int? _selectedIndex = 0;
   bool openPaymentHistory = false;
   Map<String, dynamic>? userdetails = {};
+
   List<Widget> screens = [
     Home(),
     StoreScreen(),
@@ -49,21 +50,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    userData();
     insertToken();
     print('UID--${FirebaseAuth.instance.currentUser!.uid}');
     Provider.of<UserProvider>(context, listen: false).reloadUserModel();
-  }
-
-  var ref = null;
-
-  userData() async {
-    ref = await FirebaseFirestore.instance
-        .collection("Users")
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get();
-
-    print(ref.data()!["role"]);
+    userData();
   }
 
   void insertToken() async {
@@ -98,10 +88,20 @@ class _HomePageState extends State<HomePage> {
       });
     });
   }
+  var ref;
+
+  userData() async {
+    ref = await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+
+    print(ref.data()!["role"]);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final userprovider = Provider.of<UserProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
@@ -116,263 +116,288 @@ class _HomePageState extends State<HomePage> {
             }
           }),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.only(top: 0),
-          children: [
-            UserAccountsDrawerHeader(
-              accountName: Text(
-                userprovider.userModel?.name.toString() ?? 'Enter name',
-              ),
-              accountEmail: Text(
-                userprovider.userModel?.email.toString() == ''
-                    ? userprovider.userModel?.mobile.toString() ?? ''
-                    : userprovider.userModel?.email.toString() ?? 'Enter email',
-              ),
-              currentAccountPicture: GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => MyAccountPage()));
-                },
-                child: CircleAvatar(
-                  foregroundColor: Colors.black,
-                  //foregroundImage: NetworkImage('https://stratosphere.co.in/img/user.jpg'),
-                  foregroundImage:
-                      NetworkImage(userprovider.userModel?.image ?? ''),
-                  backgroundColor: Colors.transparent,
-                  backgroundImage: CachedNetworkImageProvider(
-                    'https://stratosphere.co.in/img/user.jpg',
-                  ),
-                ),
-              ),
-              decoration: BoxDecoration(
-                color: HexColor('7B62DF'),
-              ),
-            ),
-            // Container(
-            //     height: height * 0.27,
-            //     //decoration: BoxDecoration(gradient: gradient),
-            //     color: HexColor('7B62DF'),
-            //     child: StreamBuilder<QuerySnapshot>(
-            //       stream: FirebaseFirestore.instance
-            //           .collection("Users")
-            //           .snapshots(),
-            //       builder: (BuildContext context,
-            //           AsyncSnapshot<QuerySnapshot> snapshot) {
-            //         if (!snapshot.hasData) return const SizedBox.shrink();
-            //         return ListView.builder(
-            //           itemCount: snapshot.data!.docs.length,
-            //           itemBuilder: (BuildContext context, index) {
-            //             DocumentSnapshot document = snapshot.data!.docs[index];
-            //             Map<String, dynamic> map = snapshot.data!.docs[index]
-            //                 .data() as Map<String, dynamic>;
-            //             if (map["id"].toString() ==
-            //                 FirebaseAuth.instance.currentUser!.uid) {
-            //               return Padding(
-            //                 padding: EdgeInsets.all(width * 0.05),
-            //                 child: Container(
-            //                   child: Column(
-            //                     crossAxisAlignment: CrossAxisAlignment.start,
-            //                     mainAxisSize: MainAxisSize.min,
-            //                     children: [
-            //                       CircleAvatar(
-            //                         radius: width * 0.089,
-            //                         backgroundImage:
-            //                             AssetImage('assets/user.jpg'),
-            //                       ),
-            //                       SizedBox(
-            //                         height: height * 0.01,
-            //                       ),
-            //                       map['name'] != null
-            //                           ? Text(
-            //                               map['name'],
-            //                               style: TextStyle(
-            //                                   color: Colors.white,
-            //                                   fontWeight: FontWeight.w500,
-            //                                   fontSize: width * 0.049),
-            //                             )
-            //                           : Text(
-            //                               map['mobilenumber'],
-            //                               style: TextStyle(
-            //                                   color: Colors.white,
-            //                                   fontWeight: FontWeight.w500,
-            //                                   fontSize: width * 0.049),
-            //                             ),
-            //                       SizedBox(
-            //                         height: height * 0.007,
-            //                       ),
-            //                       map['email'] != null
-            //                           ? Text(
-            //                               map['email'],
-            //                               style: TextStyle(
-            //                                   color: Colors.white,
-            //                                   fontSize: width * 0.038),
-            //                             )
-            //                           : Container(),
-            //                     ],
-            //                   ),
-            //                 ),
-            //               );
-            //             } else {
-            //               return Container();
-            //             }
-            //           },
-            //         );
-            //       },
-            //     )
-            // ),
-            InkWell(
-              child: ListTile(
-                title: Text('Home'),
-                leading: Icon(
-                  Icons.home,
-                  color: HexColor('6153D3'),
-                ),
-              ),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HomePage(),
-                  ),
-                );
-              },
-            ),
-            InkWell(
-              child: ListTile(
-                title: Text(''
-                    'My Account'),
-                leading: Icon(
-                  Icons.person,
-                  color: HexColor('6153D3'),
-                ),
-              ),
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => MyAccountPage()));
-              },
-            ),
-            InkWell(
-              child: ListTile(
-                title: Text('My Courses'),
-                leading: Icon(
-                  Icons.book,
-                  color: HexColor('6153D3'),
-                ),
-              ),
-              onTap: () async {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HomeScreen(),
-                  ),
-                );
-              },
-            ),
-            //Assignments tab for mentors only
-            ref != null
-                ? ref.data()['role'] != 'mentor'
-                    ? InkWell(
-                        child: ListTile(
-                          title: Text('Assignments'),
-                          leading: Icon(
-                            Icons.assignment_ind_outlined,
-                            color: HexColor('6153D3'),
+        child: Container(
+          child: Stack(
+            children: [
+              ListView(
+                padding: EdgeInsets.only(top: 0),
+                children: [
+                  Stack(
+                    children: [
+                      Container(
+                        child: Image.network(
+                            "https://firebasestorage.googleapis.com/v0/b/cloudyml-app.appspot.com/o/test_developer%2FRectangle%20133.png?alt=media&token=1c822b64-1f79-4654-9ebd-2bd0682c8e0f"),
+                      ),
+                      UserAccountsDrawerHeader(
+                        accountName: Text(
+                          userProvider.userModel?.name.toString() ??
+                              'Enter name',
+                        ),
+                        accountEmail: Text(
+                          userProvider.userModel?.email.toString() == ''
+                              ? userProvider.userModel?.mobile.toString() ?? ''
+                              : userProvider.userModel?.email.toString() ??
+                              'Enter email',
+                        ),
+                        currentAccountPicture: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => MyAccountPage()));
+                          },
+                          child: CircleAvatar(
+                            foregroundColor: Colors.black,
+                            //foregroundImage: NetworkImage('https://stratosphere.co.in/img/user.jpg'),
+                            foregroundImage: NetworkImage(
+                                userProvider.userModel?.image ?? ''),
+                            backgroundColor: Colors.transparent,
+                            backgroundImage: CachedNetworkImageProvider(
+                              'https://stratosphere.co.in/img/user.jpg',
+                            ),
                           ),
                         ),
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => Assignments()));
-                        },
-                      )
-                    : SizedBox()
-                : SizedBox(),
-            InkWell(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => PaymentHistory()));
-              },
-              child: ListTile(
-                title: Text('Payment History'),
-                leading: Icon(
-                  Icons.payment_rounded,
-                  color: HexColor('6153D3'),
-                ),
+                        decoration: BoxDecoration(color: Colors.transparent),
+                      ),
+                    ],
+                  ),
+                  // Container(
+                  //     height: height * 0.27,
+                  //     //decoration: BoxDecoration(gradient: gradient),
+                  //     color: HexColor('7B62DF'),
+                  //     child: StreamBuilder<QuerySnapshot>(
+                  //       stream: FirebaseFirestore.instance
+                  //           .collection("Users")
+                  //           .snapshots(),
+                  //       builder: (BuildContext context,
+                  //           AsyncSnapshot<QuerySnapshot> snapshot) {
+                  //         if (!snapshot.hasData) return const SizedBox.shrink();
+                  //         return ListView.builder(
+                  //           itemCount: snapshot.data!.docs.length,
+                  //           itemBuilder: (BuildContext context, index) {
+                  //             DocumentSnapshot document = snapshot.data!.docs[index];
+                  //             Map<String, dynamic> map = snapshot.data!.docs[index]
+                  //                 .data() as Map<String, dynamic>;
+                  //             if (map["id"].toString() ==
+                  //                 FirebaseAuth.instance.currentUser!.uid) {
+                  //               return Padding(
+                  //                 padding: EdgeInsets.all(width * 0.05),
+                  //                 child: Container(
+                  //                   child: Column(
+                  //                     crossAxisAlignment: CrossAxisAlignment.start,
+                  //                     mainAxisSize: MainAxisSize.min,
+                  //                     children: [
+                  //                       CircleAvatar(
+                  //                         radius: width * 0.089,
+                  //                         backgroundImage:
+                  //                             AssetImage('assets/user.jpg'),
+                  //                       ),
+                  //                       SizedBox(
+                  //                         height: height * 0.01,
+                  //                       ),
+                  //                       map['name'] != null
+                  //                           ? Text(
+                  //                               map['name'],
+                  //                               style: TextStyle(
+                  //                                   color: Colors.white,
+                  //                                   fontWeight: FontWeight.w500,
+                  //                                   fontSize: width * 0.049),
+                  //                             )
+                  //                           : Text(
+                  //                               map['mobilenumber'],
+                  //                               style: TextStyle(
+                  //                                   color: Colors.white,
+                  //                                   fontWeight: FontWeight.w500,
+                  //                                   fontSize: width * 0.049),
+                  //                             ),
+                  //                       SizedBox(
+                  //                         height: height * 0.007,
+                  //                       ),
+                  //                       map['email'] != null
+                  //                           ? Text(
+                  //                               map['email'],
+                  //                               style: TextStyle(
+                  //                                   color: Colors.white,
+                  //                                   fontSize: width * 0.038),
+                  //                             )
+                  //                           : Container(),
+                  //                     ],
+                  //                   ),
+                  //                 ),
+                  //               );
+                  //             } else {
+                  //               return Container();
+                  //             }
+                  //           },
+                  //         );
+                  //       },
+                  //     )
+                  // ),
+                  InkWell(
+                    child: ListTile(
+                      title: Text('Home'),
+                      leading: Icon(
+                        Icons.home,
+                        color: HexColor('691EC8'),
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomePage(),
+                        ),
+                      );
+                    },
+                  ),
+                  InkWell(
+                    child: ListTile(
+                      title: Text(''
+                          'My Account'),
+                      leading: Icon(
+                        Icons.person,
+                        color: HexColor('691EC8'),
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MyAccountPage()));
+                    },
+                  ),
+                  InkWell(
+                    child: ListTile(
+                      title: Text('My Courses'),
+                      leading: Icon(
+                        Icons.assignment,
+                        color: HexColor('691EC8'),
+                      ),
+                    ),
+                    onTap: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomeScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  //Assignments tab for mentors only
+                  ref.data() != null && ref.data()!["role"] == 'mentor' ? InkWell(
+                    child: ListTile(
+                      title: Text('Assignments'),
+                      leading: Icon(
+                        Icons.assignment_ind_outlined,
+                        color: HexColor('691EC8'),
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Assignments()));
+                    },
+                  ) : Container()
+                  ,
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => PaymentHistory()));
+                    },
+                    child: ListTile(
+                      title: Text('Payment History'),
+                      leading: Icon(
+                        Icons.payment_rounded,
+                        color: HexColor('691EC8'),
+                      ),
+                    ),
+                  ),
+                  Divider(
+                    thickness: 2,
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => PrivacyPolicy()));
+                    },
+                    child: ListTile(
+                      title: Text('Privacy policy'),
+                      leading: Icon(
+                        Icons.privacy_tip,
+                        color: HexColor('691EC8'),
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    child: ListTile(
+                      title: Text('About Us'),
+                      leading: Icon(
+                        Icons.info,
+                        color: HexColor('691EC8'),
+                      ),
+                    ),
+                    onTap: () async {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => AboutUs()));
+                    },
+                  ),
+                  // InkWell(
+                  //   child: ListTile(
+                  //     title: Text('Notification Local'),
+                  //     leading: Icon(
+                  //       Icons.book,
+                  //       color: HexColor('6153D3'),
+                  //     ),
+                  //   ),
+                  //   ),
+                  //   onTap: () async {
+                  //
+                  //     await AwesomeNotifications().createNotification(
+                  //         content:NotificationContent(
+                  //             id:  1234,
+                  //             channelKey: 'image',
+                  //           title: 'Welcome to CloudyML',
+                  //           body: 'It\'s great to have you on CloudyML',
+                  //           bigPicture: 'asset://assets/HomeImage.png',
+                  //           largeIcon: 'asset://assets/logo2.png',
+                  //           notificationLayout: NotificationLayout.BigPicture,
+                  //           displayOnForeground: true
+                  //         )
+                  //     );
+                  //     // LocalNotificationService.showNotificationfromApp(
+                  //     //   title: 'Welcome to CloudyML',
+                  //     //   body: 'It\'s great to have you on CloudyML',
+                  //     //   payload: 'account'
+                  //     // );
+                  //   },
+                  // ),
+                ],
               ),
-            ),
-            Divider(
-              thickness: 2,
-            ),
-            InkWell(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => PrivacyPolicy()));
-              },
-              child: ListTile(
-                title: Text('Privacy policy'),
-                leading: Icon(
-                  Icons.privacy_tip,
-                  color: HexColor('6153D3'),
-                ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: CircleAvatar(
+                    maxRadius: 16,
+                    backgroundColor: Colors.white,
+                    child: Center(
+                      child: IconButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          icon: Icon(
+                            Icons.arrow_back,
+                            color: Colors.black,
+                            size: 12,
+                          )),
+                    )),
               ),
-            ),
-            InkWell(
-              child: ListTile(
-                title: Text('About Us'),
-                leading: Icon(
-                  Icons.info,
-                  color: HexColor('6153D3'),
-                ),
-              ),
-              onTap: () async {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => AboutUs()));
-              },
-            ),
-            InkWell(
-              child: ListTile(
-                title: Text('LogOut'),
-                leading: Icon(
-                  Icons.logout,
-                  color: HexColor('6153D3'),
-                ),
-              ),
-              onTap: () {
-                logOut(context);
-              },
-            ),
-            // InkWell(
-            //   child: ListTile(
-            //     title: Text('Notification Local'),
-            //     leading: Icon(
-            //       Icons.book,
-            //       color: HexColor('6153D3'),
-            //     ),
-            //   ),
-            //   ),
-            //   onTap: () async {
-            //
-            //     await AwesomeNotifications().createNotification(
-            //         content:NotificationContent(
-            //             id:  1234,
-            //             channelKey: 'image',
-            //           title: 'Welcome to CloudyML',
-            //           body: 'It\'s great to have you on CloudyML',
-            //           bigPicture: 'asset://assets/HomeImage.png',
-            //           largeIcon: 'asset://assets/logo2.png',
-            //           notificationLayout: NotificationLayout.BigPicture,
-            //           displayOnForeground: true
-            //         )
-            //     );
-            //     // LocalNotificationService.showNotificationfromApp(
-            //     //   title: 'Welcome to CloudyML',
-            //     //   body: 'It\'s great to have you on CloudyML',
-            //     //   payload: 'account'
-            //     // );
-            //   },
-            // ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: SizedBox(
@@ -412,15 +437,6 @@ class _HomePageState extends State<HomePage> {
               ),
               label: 'Store',
             ),
-            // BottomNavigationBarItem(
-            //   icon: new Icon(Icons.download_for_offline_outlined,
-            //       color: Colors.black.withOpacity(0.5)),
-            //   activeIcon: Icon(
-            //     Icons.download_for_offline,
-            //     color: Colors.black,
-            //   ),
-            //   label: '   ',
-            // ),
             BottomNavigationBarItem(
               icon: new Icon(Icons.chat_bubble_outline_sharp,
                   color: Colors.black.withOpacity(0.5)),
