@@ -27,6 +27,7 @@ class DatabaseServices {
               .map(
                 (documentSnapshot) => CourseDetails(
                   amountPayable: documentSnapshot.data()['Amount Payable'],
+                  amount_Payable: documentSnapshot.data()['Amount_Payablepay'],
                   courseDocumentId: documentSnapshot.id,
                   courseId: documentSnapshot.data()['id'],
                   courseImageUrl: documentSnapshot.data()['image_url'],

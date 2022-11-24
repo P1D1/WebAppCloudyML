@@ -291,6 +291,8 @@ class _VideoScreenState extends State<VideoScreen> {
     super.initState();
   }
 
+  bool menuClicked = false;
+
   @override
   Widget build(BuildContext context) {
     List<CourseDetails> course = Provider.of<List<CourseDetails>>(context);
@@ -306,119 +308,129 @@ class _VideoScreenState extends State<VideoScreen> {
           final isPortrait = orientation == Orientation.portrait;
           return Row(
             children: [
+              menuClicked ?
               isPortrait
                   ? Container()
-                  : Expanded(
-                      flex: 1,
-                      child: Column(
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              Navigator.pop(context);
-                            },
-                            child: Container(
-                                child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.arrow_back_ios),
-                                  Text(
-                                    'Back to courses',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  )
-                                ],
-                              ),
-                            )),
-                          ),
-                          // Expanded(
-                          //   flex: 0,
-                          //     child: _buildPartition(
-                          //   context,
-                          //   horizontalScale,
-                          //   verticalScale,
-                          // ),),
-                          Expanded(
-                            child: _buildVideoDetailsListTile(
-                              horizontalScale,
-                              verticalScale,
+                  : SizedBox() :
+              Expanded(
+                flex: 1,
+                child: Column(
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                Icon(Icons.arrow_back_ios),
+                                Text(
+                                  'Back to courses',
+                                  style:
+                                  TextStyle(fontWeight: FontWeight.bold),
+                                )
+                              ],
                             ),
-                          ),
-                        ],
+                          )),
+                    ),
+                    // Expanded(
+                    //   flex: 0,
+                    //     child: _buildPartition(
+                    //   context,
+                    //   horizontalScale,
+                    //   verticalScale,
+                    // ),),
+                    Expanded(
+                      child: _buildVideoDetailsListTile(
+                        horizontalScale,
+                        verticalScale,
                       ),
                     ),
+                  ],
+                ),
+              ),
               Expanded(
                 flex: 2,
-                child: showAssignment ? AssignmentScreen() : Column(
+                child: showAssignment ?
+                AssignmentScreen() :
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            enablePauseScreen = !enablePauseScreen;
-                            print('Container of column clicked');
-                          });
-                        },
-                        child: Container(
-                          color: Colors.black,
-                          child: FutureBuilder(
-                            future: playVideo,
-                            builder: (BuildContext context,
-                                AsyncSnapshot<dynamic> snapshot) {
-                              if (ConnectionState.done ==
-                                  snapshot.connectionState) {
-                                return Stack(
-                                  children: [
-                                    Container(
-                                      child: Center(
-                                        child: AspectRatio(
-                                          aspectRatio: 16 / 9,
-                                          child:
-                                          VideoPlayer(_videoController!),
+                    FutureBuilder(
+                      future: playVideo,
+                      builder: (BuildContext context,
+                          AsyncSnapshot<dynamic> snapshot) {
+                        if (ConnectionState.done ==
+                            snapshot.connectionState) {
+                          return Stack(
+                            children: [
+                              Container(
+                                height: menuClicked ? screenHeight : screenHeight/1.2,
+                                child: Center(
+                                  child: AspectRatio(
+                                    aspectRatio: 16 / 9,
+                                    child:
+                                    VideoPlayer(_videoController!),
+                                  ),
+                                ),
+                              ),
+                              InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      enablePauseScreen = !enablePauseScreen;
+                                      print('Container of column clicked');
+                                    });
+                                  },
+                                  child: Container(
+                                    height: menuClicked ? screenHeight : screenHeight/1.2,
+                                    width: screenWidth,
+                                  )),
+                              enablePauseScreen
+                                  ? Container(
+                                height: menuClicked ? screenHeight : screenHeight/1.2,
+                                    child: _buildControls(
+                                        context,
+                                        isPortrait,
+                                        horizontalScale,
+                                        verticalScale,
+                                      ),
+                                  )
+                                  : SizedBox(),
+                              _isBuffering && !enablePauseScreen
+                                  ? Center(
+                                      heightFactor: 6.2,
+                                      child: Container(
+                                        width: 60,
+                                        height: 60,
+                                        child: CircularProgressIndicator(
+                                          color: Color.fromARGB(
+                                            114,
+                                            255,
+                                            255,
+                                            255,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    enablePauseScreen
-                                        ? _buildControls(
-                                            context,
-                                            isPortrait,
-                                            horizontalScale,
-                                            verticalScale,
-                                          )
-                                        : SizedBox(),
-                                    _isBuffering && !enablePauseScreen
-                                        ? Center(
-                                            heightFactor: 6.2,
-                                            child: Container(
-                                              width: 60,
-                                              height: 60,
-                                              child: CircularProgressIndicator(
-                                                color: Color.fromARGB(
-                                                  114,
-                                                  255,
-                                                  255,
-                                                  255,
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                        : Container(),
-                                  ],
-                                );
-                              } else {
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    color: Color(0xFF7860DC),
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                          // },
-                          // ),
-                        ),
-                      ),
+                                    )
+                                  : Container(),
+                            ],
+                          );
+                        } else {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF7860DC),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    menuClicked ? Container() : Padding(
+                      padding: const EdgeInsets.only(top: 15.0),
+                      child: Text(
+                        _listOfVideoDetails[_currentVideoIndex.value].videoTitle,
+                      style: TextStyle(fontSize: 18, fontFamily: 'SemiBold'),),
                     ),
                     isPortrait
                         ? _buildPartition(
@@ -452,173 +464,182 @@ class _VideoScreenState extends State<VideoScreen> {
     double horizontalScale,
     double verticalScale,
   ) {
-    return Container(
-      color: Color.fromARGB(114, 0, 0, 0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          ListTile(
-            leading: isPortrait
-                ? IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: Icon(
-                      Icons.arrow_back_ios,
-                      color: Colors.white,
-                    ),
-                  )
-                : null,
-            title: Text(
-              _listOfVideoDetails[_currentVideoIndex.value].videoTitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 15,
+    return InkWell(
+      onTap: () {
+        setState(() {
+          enablePauseScreen = !enablePauseScreen;
+        });
+      },
+      child: Container(
+        color: Color.fromARGB(114, 0, 0, 0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ListTile(
+              leading: isPortrait
+                  ? null
+                  : IconButton(
+                onPressed: () {
+                  setState(() {
+                    menuClicked = !menuClicked;
+                  });
+                   },
+                icon: Icon(
+                  Icons.menu,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            trailing: InkWell(
-              onTap: () {
-                showSettingsBottomsheet(
-                  context,
-                  horizontalScale,
-                  verticalScale,
-                  _videoController!,
-                );
-                // var directory = await getApplicationDocumentsDirectory();
-                // download(
-                //   dio: Dio(),
-                //   fileName: data!['name'],
-                //   url: data!['url'],
-                //   savePath:
-                //       "${directory.path}/${data!['name'].replaceAll(' ', '')}.mp4",
-                //   topicName: data!['name'],
-                // );
-                // print(directory.path);
-              },
-              child: Icon(
-                Icons.settings,
-                color: Colors.white,
+              title: Text(
+                _listOfVideoDetails[_currentVideoIndex.value].videoTitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                ),
               ),
-            ),
-          ),
-          ValueListenableBuilder(
-            valueListenable: _currentVideoIndex,
-            builder: (context, value, child) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _currentVideoIndex.value >= 1
-                      ? InkWell(
-                          onTap: () {
-                            VideoScreen.currentSpeed.value = 1.0;
-                            _currentVideoIndex.value--;
-                            initializeVidController(
-                              _listOfVideoDetails[_currentVideoIndex.value]
-                                  .videoUrl,
-                            );
-                          },
-                          child: Icon(
-                            Icons.skip_previous_rounded,
-                            color: Colors.white,
-                            size: 40,
-                          ),
-                        )
-                      : SizedBox(),
-                  replay10(
-                    videoController: _videoController,
-                  ),
-                  !_isBuffering
-                      ? InkWell(
-                          onTap: () {
-                            if (_isPlaying) {
-                              setState(() {
-                                _videoController!.pause();
-                              });
-                            } else {
-                              setState(() {
-                                enablePauseScreen = !enablePauseScreen;
-                                _videoController!.play();
-                              });
-                            }
-                          },
-                          child: Icon(
-                            _isPlaying ? Icons.pause : Icons.play_arrow,
-                            color: Colors.white,
-                            size: 50,
-                          ),
-                        )
-                      : CircularProgressIndicator(
-                          color: Color.fromARGB(
-                            114,
-                            255,
-                            255,
-                            255,
-                          ),
-                        ),
-                  fastForward10(
-                    videoController: _videoController,
-                  ),
-                  _currentVideoIndex.value < _listOfVideoDetails.length - 1
-                      ? InkWell(
-                          onTap: () {
-                            VideoScreen.currentSpeed.value = 1.0;
-                            _currentVideoIndex.value++;
-                            initializeVidController(
-                              _listOfVideoDetails[_currentVideoIndex.value]
-                                  .videoUrl,
-                            );
-                          },
-                          child: Icon(
-                            Icons.skip_next_rounded,
-                            color: Colors.white,
-                            size: 40,
-                          ),
-                        )
-                      : SizedBox(),
-                ],
-              );
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Column(
-              children: [
-                Container(
-                  height: 10,
-                  child: VideoProgressIndicator(
+              trailing: InkWell(
+                onTap: () {
+                  showSettingsBottomsheet(
+                    context,
+                    horizontalScale,
+                    verticalScale,
                     _videoController!,
-                    allowScrubbing: true,
-                    colors: VideoProgressColors(
-                      backgroundColor: Color.fromARGB(74, 255, 255, 255),
-                      bufferedColor: Color(0xFFC0AAF5),
-                      playedColor: Color(0xFF7860DC),
+                  );
+                  // var directory = await getApplicationDocumentsDirectory();
+                  // download(
+                  //   dio: Dio(),
+                  //   fileName: data!['name'],
+                  //   url: data!['url'],
+                  //   savePath:
+                  //       "${directory.path}/${data!['name'].replaceAll(' ', '')}.mp4",
+                  //   topicName: data!['name'],
+                  // );
+                  // print(directory.path);
+                },
+                child: Icon(
+                  Icons.settings,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            ValueListenableBuilder(
+              valueListenable: _currentVideoIndex,
+              builder: (context, value, child) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _currentVideoIndex.value >= 1
+                        ? InkWell(
+                            onTap: () {
+                              VideoScreen.currentSpeed.value = 1.0;
+                              _currentVideoIndex.value--;
+                              initializeVidController(
+                                _listOfVideoDetails[_currentVideoIndex.value]
+                                    .videoUrl,
+                              );
+                            },
+                            child: Icon(
+                              Icons.skip_previous_rounded,
+                              color: Colors.white,
+                              size: 40,
+                            ),
+                          )
+                        : SizedBox(),
+                    replay10(
+                      videoController: _videoController,
+                    ),
+                    !_isBuffering
+                        ? InkWell(
+                            onTap: () {
+                              if (_isPlaying) {
+                                setState(() {
+                                  _videoController!.pause();
+                                });
+                              } else {
+                                setState(() {
+                                  enablePauseScreen = !enablePauseScreen;
+                                  _videoController!.play();
+                                });
+                              }
+                            },
+                            child: Icon(
+                              _isPlaying ? Icons.pause : Icons.play_arrow,
+                              color: Colors.white,
+                              size: 50,
+                            ),
+                          )
+                        : CircularProgressIndicator(
+                            color: Color.fromARGB(
+                              114,
+                              255,
+                              255,
+                              255,
+                            ),
+                          ),
+                    fastForward10(
+                      videoController: _videoController,
+                    ),
+                    _currentVideoIndex.value < _listOfVideoDetails.length - 1
+                        ? InkWell(
+                            onTap: () {
+                              VideoScreen.currentSpeed.value = 1.0;
+                              _currentVideoIndex.value++;
+                              initializeVidController(
+                                _listOfVideoDetails[_currentVideoIndex.value]
+                                    .videoUrl,
+                              );
+                            },
+                            child: Icon(
+                              Icons.skip_next_rounded,
+                              color: Colors.white,
+                              size: 40,
+                            ),
+                          )
+                        : SizedBox(),
+                  ],
+                );
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Column(
+                children: [
+                  Container(
+                    height: 10,
+                    child: VideoProgressIndicator(
+                      _videoController!,
+                      allowScrubbing: true,
+                      colors: VideoProgressColors(
+                        backgroundColor: Color.fromARGB(74, 255, 255, 255),
+                        bufferedColor: Color(0xFFC0AAF5),
+                        playedColor: Color(0xFF7860DC),
+                      ),
                     ),
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        timeElapsedString(),
-                        Text(
-                          '/${_videoController!.value.duration.toString().substring(2, 7)}',
-                          style: TextStyle(
-                            color: Colors.white,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          timeElapsedString(),
+                          Text(
+                            '/${_videoController!.value.duration.toString().substring(2, 7)}',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    fullScreenIcon(
-                      isPortrait: isPortrait,
-                    ),
-                  ],
-                ),
-              ],
+                        ],
+                      ),
+                      fullScreenIcon(
+                        isPortrait: isPortrait,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

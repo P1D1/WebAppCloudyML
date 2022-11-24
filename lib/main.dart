@@ -14,6 +14,7 @@ import 'package:cloudyml_app2/my_Courses.dart';
 import 'package:cloudyml_app2/payment_screen.dart';
 import 'package:cloudyml_app2/payments_history.dart';
 import 'package:cloudyml_app2/screens/chat_screen.dart';
+import 'package:cloudyml_app2/screens/exlusive_offer/seasons_offer_screen.dart';
 import 'package:cloudyml_app2/services/local_notificationservice.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -328,7 +329,9 @@ class _MyAppState extends State<MyApp> {
             ),
             initialRoute: '/',
             routes: {
-              "/": (context) =>  Authenticate(),
+              "/": (context) =>
+                  // SeasonOffer(),
+                  Authenticate(),
               "/courses": (context) => const HomeScreen(),
               "/paymentscreen" : (context) => PaymentScreen(map: courseMap, isItComboCourse: false),
               "/paymenthistory" : (context) => PaymentHistory(),

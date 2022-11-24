@@ -6,6 +6,7 @@ class CourseDetails {
   String courseDescription;
   String createdBy;
   String amountPayable;
+  String amount_Payable;
   String discount;
   bool isItComboCourse;
   String courseImageUrl;
@@ -22,6 +23,7 @@ class CourseDetails {
     required this.coursePrice,
     required this.courseDescription,
     required this.amountPayable,
+    required this.amount_Payable,
     required this.discount,
     required this.isItComboCourse,
     required this.courseImageUrl,

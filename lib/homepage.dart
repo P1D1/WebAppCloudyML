@@ -13,6 +13,7 @@ import 'package:cloudyml_app2/pages/notificationpage.dart';
 import 'package:cloudyml_app2/payments_history.dart';
 import 'package:cloudyml_app2/privacy_policy.dart';
 import 'package:cloudyml_app2/screens/assignment_tab_screen.dart';
+import 'package:cloudyml_app2/screens/exlusive_offer/seasons_offer_screen.dart';
 import 'package:cloudyml_app2/screens/image_page.dart';
 import 'package:cloudyml_app2/store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -31,6 +32,7 @@ import 'package:video_player/video_player.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'MyAccount/myaccount.dart';
 import 'aboutus.dart';
+import 'package:http/http.dart' as http;
 import 'combo/combo_course.dart';
 import 'module/pdf_course.dart';
 import 'module/video_screen.dart';
@@ -182,6 +184,38 @@ class _HomeState extends State<Home> {
     var horizontalScale = screenWidth / mockUpWidth;
 
     return Scaffold(
+      // floatingActionButton: FloatingActionButton(onPressed: ( ) async {
+      //
+      //   // var headers =  {
+      //   //   "Access-Control-Allow-Origin": "*",
+      //   // 'Content-Type': 'application/json',
+      //   // 'Accept': '*/*',
+      //   // };
+      //
+      //   final String postsURL = "https://us-central1-fir-messaging-b5ab7.cloudfunctions.net/helloWorld";
+      //
+      //
+      //    var res = await http.get(Uri.parse(postsURL));
+      //    print('Heeeelo');
+      //
+      //
+      //   await http.get(Uri.parse('https://us-central1-fir-messaging-b5ab7.cloudfunctions.net/helloWorld'));
+      //   print('Success1');
+      //
+      //   var request =
+      //   http.Request('GET',
+      //       Uri.parse('https://us-central1-fir-messaging-b5ab7.cloudfunctions.net/helloWorld'));
+      //
+      //
+      //   http.StreamedResponse response = await request.send();
+      //
+      //   if (response.statusCode == 200) {
+      //     print(await response.stream.bytesToString());
+      //   }
+      //   else {
+      //   print(response.reasonPhrase);
+      //   }
+      // }),
       key: _scaffoldKey,
       drawer: Drawer(
         child: Container(
@@ -503,8 +537,15 @@ class _HomeState extends State<Home> {
                             "CloudyML",
                             style: textStyle,
                           ),
+                          //offer navigation
+                          // TextButton(
+                          //     onPressed: () {
+                          //   Navigator.push(context,
+                          //       MaterialPageRoute(builder: (context)=> SeasonOffer()));
+                          // }, child: Text('Sizzling Offers')),
+
                           SizedBox(
-                            width: horizontalScale * 300,
+                            width: horizontalScale * 250,
                           ),
                           constraints.maxWidth < 800
                               ? Expanded(
@@ -1146,42 +1187,42 @@ class _HomeState extends State<Home> {
                                               ),
                                             ),
                                             SizedBox(
-                                              height: 20,
+                                              height: 10,
                                             ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: ElevatedButton(
-                                                        onPressed: () {},
-                                                        style: ElevatedButton
-                                                            .styleFrom(
-                                                          backgroundColor:
-                                                              HexColor(
-                                                                  "8346E1"),
-                                                          shape: RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          5)),
-                                                        ),
-                                                        child: Text(
-                                                          "${course[index].coursePrice}",
-                                                          style: TextStyle(
-                                                              fontSize: 12,
-                                                              color:
-                                                                  Colors.white,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        )),
-                                                  ),
-                                                  SizedBox(
-                                                    width: 10,
-                                                  ),
-                                                  Expanded(
+                                            Column(
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(bottom: 10.0),
+                                                  child: ElevatedButton(
+                                                      onPressed: () {},
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            HexColor(
+                                                                "8346E1"),
+                                                        shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5)),
+                                                      ),
+                                                      child: Text(
+                                                        "${course[index].coursePrice}",
+                                                        style: TextStyle(
+                                                            fontSize: 12,
+                                                            color:
+                                                                Colors.white,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      )),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.only(right: 15.0),
+                                                  child: Align(
+                                                    alignment:
+                                                    Alignment.bottomRight,
                                                     child: Image.asset(
                                                       'assets/Rating.png',
                                                       fit: BoxFit.fill,
@@ -1189,8 +1230,8 @@ class _HomeState extends State<Home> {
                                                       width: 50,
                                                     ),
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                              ],
                                             ),
                                           ],
                                         ),

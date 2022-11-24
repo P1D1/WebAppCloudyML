@@ -191,7 +191,8 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
         setState(() {
           amountStringForRp = '100000';
         });
-      } else if (isOutStandingAmountCheckerPressed) {
+      }
+      else if (isOutStandingAmountCheckerPressed) {
         setState(() {
           amountStringForRp =
               (double.parse(widget.outStandingAmountString) * 100)
@@ -432,17 +433,6 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
     });
   }
 
-  // void initState() {
-  //   super.initState();
-  //   updateAmoutStringForRP(
-  //       widget.isPayInPartsPressed,
-  //       widget.isMinAmountCheckerPressed,
-  //       widget.isOutStandingAmountCheckerPressed);
-  //   updateAmoutStringForUPI(
-  //       widget.isPayInPartsPressed,
-  //       widget.isMinAmountCheckerPressed,
-  //       widget.isOutStandingAmountCheckerPressed);
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -955,6 +945,7 @@ class _PaymentButtonState extends State<PaymentButton> with CouponCodeMixin {
                             isPayInPartsPressed,
                             isMinAmountCheckerPressed,
                             isOutStandingAmountCheckerPressed);
+
                         widget.updateCourseIdToCouponDetails();
 
                         order_id = await generateOrderId('rzp_live_ESC1ad8QCKo9zb',

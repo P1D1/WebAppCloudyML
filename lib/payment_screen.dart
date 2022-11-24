@@ -30,14 +30,7 @@ class _PaymentScreenState extends State<PaymentScreen> with CouponCodeMixin {
   // VoidCallback? _showPersistentBottomSheetCallBack;
 
   //offer model implementation
-  var offerData = [
-    OfferModel(
-        id: 1,
-        title: 'Diwali offer',
-        discount: "Discount",
-        discountPrice: "300"
-    ),
-  ];
+
 
   String? id;
 
