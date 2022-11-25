@@ -1,17 +1,11 @@
 import 'dart:math';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloudyml_app2/catalogue_screen.dart';
-import 'package:cloudyml_app2/combo/combo_store.dart';
-import 'package:cloudyml_app2/course.dart';
 import 'package:cloudyml_app2/globals.dart';
 import 'package:cloudyml_app2/models/course_details.dart';
 import 'package:cloudyml_app2/module/video_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_styled_toast/flutter_styled_toast.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 class ComboCourse extends StatefulWidget {
@@ -325,7 +319,7 @@ class _ComboCourseState extends State<ComboCourse> {
                     //                     curve: Curves.bounceInOut,
                     //                     type: PageTransitionType.topToBottom,
                     //                     child: VideoScreen(
-                    //                       isdemo: null, courseName: '', sr: null,
+                    //                       isDemo: null, courseName: '', sr: null,
                     //                     ),
                     //                   ),
                     //                 );
@@ -338,7 +332,7 @@ class _ComboCourseState extends State<ComboCourse> {
                     //                   curve: Curves.bounceInOut,
                     //                   type: PageTransitionType.topToBottom,
                     //                   child: VideoScreen(
-                    //                     isdemo: null, courseName: '', sr: null,
+                    //                     isDemo: null, courseName: '', sr: null,
                     //                   ),
                     //                 ),
                     //               );

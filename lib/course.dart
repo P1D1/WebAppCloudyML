@@ -95,7 +95,7 @@
 //                                     curve: Curves.bounceInOut,
                                     // type: PageTransitionType.topToBottom,
 //                                     child: VideoScreen(
-//                                       isdemo: false,
+//                                       isDemo: false,
 //                                       sr: 1,
 //                                       courseName: name,
 //                                     ),
@@ -109,7 +109,7 @@
 //                                     curve: Curves.bounceInOut,
 //                                     type: PageTransitionType.topToBottom,
 //                                     child: AssignmentScreen(
-//                                       isdemo: false,
+//                                       isDemo: false,
 //                                       sr: 1,
 //                                     ),
 //                                   ),

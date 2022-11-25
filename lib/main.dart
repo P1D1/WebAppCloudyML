@@ -24,9 +24,7 @@ import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:renderer_switcher/renderer_switcher.dart';
-
 import 'globals.dart';
-import 'homepage.dart';
 
 
 
@@ -130,6 +128,8 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+
+
   @override
   void initState() {
     // TODO: implement initState
@@ -139,6 +139,9 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+
+
+
     // showNoInternet() {
     //   AlertDialog alert = AlertDialog(
     //     content: Padding(

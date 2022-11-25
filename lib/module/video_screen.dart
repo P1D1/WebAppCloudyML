@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudyml_app2/widgets/assignment_bottomsheet.dart';
 import 'package:cloudyml_app2/widgets/settings_bottomsheet.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
@@ -18,8 +19,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:html' as html;
-
-import '../combo/combo_course.dart';
 import '../models/course_details.dart';
 import 'new_assignment_screen.dart';
 
@@ -29,6 +28,7 @@ class VideoScreen extends StatefulWidget {
   final bool? isDemo;
   final String? courseName;
   static ValueNotifier<double> currentSpeed = ValueNotifier(1.0);
+
   const VideoScreen(
       {required this.isDemo, this.sr, this.courseName, this.courses});
 
@@ -48,11 +48,13 @@ class _VideoScreenState extends State<VideoScreen> {
   String? assignMentVideoUrl;
   bool _disposed = false;
   bool _isPlaying = false;
+  bool loading = false;
   bool enablePauseScreen = false;
   bool _isBuffering = false;
   Duration? _duration;
   Duration? _position;
   bool switchTOAssignment = false;
+  bool stopdownloading = true;
   bool showAssignSol = false;
 
   var _delayToInvokeonControlUpdate = 0;
@@ -60,6 +62,7 @@ class _VideoScreenState extends State<VideoScreen> {
   List<VideoDetails> _listOfVideoDetails = [];
 
   ValueNotifier<int> _currentVideoIndex = ValueNotifier(0);
+  ValueNotifier<int> _currentVideoIndex2 = ValueNotifier(0);
   ValueNotifier<double> _downloadProgress = ValueNotifier(0);
 
   void getData() async {
@@ -221,6 +224,149 @@ class _VideoScreenState extends State<VideoScreen> {
     }
   }
 
+  var courseData;
+
+  String courseName = '';
+
+  Map<String, List> datamap = {};
+
+  List<VideoDetails> _videodetails = [];
+  Future<void> getCourseData() async {
+    setState(() {
+      loading = true;
+    });
+    var val;
+    // CourseDetails? dfs;
+    // final FirebaseFirestore _fireStore = FirebaseFirestore.instance;
+    // _fireStore.doc
+    print(
+        "LLLLLLL ${FirebaseAuth.instance.currentUser!.uid} ${courseId}");
+
+    var data = await FirebaseFirestore.instance
+        .collection('courses')
+        .doc(courseId)
+        .get()
+        .then((value) {
+      print(value.data());
+
+      val = value.data();
+
+      var curriculumdata = val["curriculum"];
+      courseName = val['name'];
+
+      curriculumdata.remove("sectionsName");
+      // print(curriculumdata);
+      curriculumdata.entries.forEach((entry) async {
+        // print('${entry.key}:${entry.value}');
+        // print("\n");
+        // print("\n");
+        // print("\n");
+        // print("\n");
+        try {
+          for (var i in entry.value) {
+            // print(i);
+
+            await FirebaseFirestore.instance
+                .collection('courses')
+                .doc(courseId)
+                .collection('Modules')
+                .doc(moduleId)
+                .collection('Topics')
+                .where("name", isEqualTo: "${i.toString().trim()}")
+                .get()
+                .then(
+                  (value) async {
+                // print(value.docs);
+                for (var video in value.docs) {
+                  _videodetails.add(
+                    await VideoDetails(
+                      videoId: video.data()['id'] ?? '',
+                      type: video.data()['type'] ?? '',
+                      canSaveOffline: video.data()['Offline'] ?? true,
+                      serialNo: video.data()['sr'].toString(),
+                      videoTitle: video.data()['name'] ?? '',
+                      videoUrl: video.data()['url'] ?? '',
+                    ),
+                  );
+                  // print(video.data()['id']);
+                  // print(video.data()['type']);
+                  // print(video.data()['Offline']);
+                  // print(video.data()['sr'].toString());
+                  // print(video.data()['name']);
+                  // print(video.data()['url']);
+                }
+                // var planets = <String, List>{entry.key: _videodetails};
+
+                // datamap.entries.forEach((entry) {
+                //   print(
+                //       'Kdddddddddddddddddddddddddddddey = ${entry.key} : Vaddddddddddddddddddddddddddddddddlue = ${entry.value}');
+                // });
+              },
+            );
+          }
+        } catch (e) {
+          print(e.toString());
+        }
+
+        try {
+          print(
+              'Kdddddddddddddddddddddddddddddey = ${entry.key} : Vaddddddddddddddddddddddddddddddddlue = ${entry.value}');
+          print(entry.key);
+          datamap[entry.key] = _videodetails.toList();
+
+          _videodetails.clear();
+        } catch (e) {
+          print(1);
+          print(e);
+        }
+
+        //     datamap.entries.forEach((entry) {
+        //   print(
+        //       'Kdddddddddddddddddddddddddddddey = ${entry.key} : Vaddddddddddddddddddddddddddddddddlue = ${entry.value}');
+        // });
+      });
+      try {
+        courseData = datamap;
+        courseData = courseData;
+        print("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy ");
+        print(curriculumdata.length);
+        print(courseData);
+        if (courseData == datamap) {
+          setState(() {
+            loading = false;
+            courseData;
+          });
+        }
+
+        print("LLLLLLLLLLLLLLLLLLyyyyyyyyyyyyyy ");
+      } catch (e) {
+        print('2');
+        if (courseData == datamap) {
+          setState(() {
+            loading = false;
+            courseData;
+          });
+        }
+        print(e);
+      }
+    });
+    if (courseData == datamap) {
+      setState(() {
+        loading = false;
+        courseData;
+      });
+    }
+    // for (var i = 0; i < datamap.length; i++) {
+    //   var value = datamap.entries.elementAt(i).value;
+    //   for (var i in value) {
+    //     resultValue.add(OptionItem(id: 'null', title: i.videoTitle));
+    //   }
+    //   print(resultValue);
+    // }
+
+    print("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL ");
+  }
+
   Future download({
     Dio? dio,
     String? url,
@@ -284,10 +430,14 @@ class _VideoScreenState extends State<VideoScreen> {
   void initState() {
     html.window.document.onContextMenu.listen((evt) => evt.preventDefault());
     VideoScreen.currentSpeed.value = 1.0;
+
     getData();
+    getCourseData();
+
     Future.delayed(Duration(milliseconds: 500), () {
       initializeVidController(_listOfVideoDetails[0].videoUrl);
     });
+
     super.initState();
   }
 
@@ -343,7 +493,7 @@ class _VideoScreenState extends State<VideoScreen> {
                     //   verticalScale,
                     // ),),
                     Expanded(
-                      child: _buildVideoDetailsListTile(
+                      child: _buildVideoDetailsListTiles(
                         horizontalScale,
                         verticalScale,
                       ),
@@ -353,8 +503,14 @@ class _VideoScreenState extends State<VideoScreen> {
               ),
               Expanded(
                 flex: 2,
-                child: showAssignment ?
-                AssignmentScreen() :
+                child:
+                showAssignment ?
+                AssignmentScreen(
+                  selectedSection: selectedSection,
+                  courseData: courseData,
+                  courseName: widget.courseName,
+
+                    ) :
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -744,6 +900,379 @@ class _VideoScreenState extends State<VideoScreen> {
     );
   }
 
+
+  int? selectedSection;
+
+  Widget _buildVideoDetailsListTiles(
+      double horizontalScale, double verticalScale) {
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.width;
+
+    print('sddddddddddddddddddddddddddddddddddddddddd');
+    print(courseData?.length);
+    print('sddddddddddddddddddddddddddddddddddddddddd');
+    // return Container();
+    return InkWell(
+      onTap: () {
+        print('sddddddddddddddddddddddddddddddddddddddddd');
+
+        print(courseData?.length);
+
+        print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(3.0),
+        child: Container(
+          child: loading
+              ? Center(
+            child: Container(
+              height: 40,
+              width: 40,
+              child: Center(
+                child: CircularProgressIndicator(
+                  backgroundColor: Color.fromARGB(255, 0, 0, 0),
+                ),
+              ),
+            ),
+          )
+              : ListView.builder(
+              itemCount: courseData?.length,
+              itemBuilder: (BuildContext context, int index) {
+                // return Container();
+                print("this is index : ${index}");
+                var count = -1;
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                  child: Column(
+                    children: [
+                      Container(
+                          margin: const EdgeInsets.all(5.0),
+                          padding: const EdgeInsets.all(3.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Color(0xFF7860DC),
+                            ),
+                            borderRadius: BorderRadius.all(Radius.circular(
+                                25.0) //                 <--- border radius here
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
+                            child: ButtonTheme(
+                              alignedDropdown: true,
+                              child: DropdownButton(
+                                alignment: Alignment.center,
+                                elevation: 8,
+                                isExpanded: true,
+                                borderRadius: BorderRadius.circular(23),
+                                underline: SizedBox(),
+                                icon: Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: Colors.black,
+                                ),
+                                hint:
+                                Text(courseData.entries.elementAt(index).key),
+                                items: courseData.entries
+                                    .elementAt(index)
+                                    .value
+                                    .map<DropdownMenuItem<String>>(
+                                        (dynamic value) {
+                                      count += 1;
+                                      return DropdownMenuItem<String>(
+                                        value: value.videoTitle,
+                                        child: GestureDetector(
+                                          child: Container(
+                                            child: Text(value.videoTitle,
+                                                style: TextStyle(
+                                                    color: Color(0xFF7860DC),
+                                                    fontWeight: FontWeight.w400,
+                                                    fontSize: 14),
+                                                maxLines: 3,
+                                                textAlign: TextAlign.start,),
+                                          ),
+                                          onTap: () {
+                                            print(value.videoTitle);
+
+                                            VideoScreen.currentSpeed.value = 1.0;
+
+                                            initializeVidController(
+                                              value.videoUrl,
+                                            );
+                                            // _currentVideoIndex.value = index;
+                                          },
+                                        ),
+                                      );
+                                    }).toList(),
+                                onChanged: (val) {
+                                  print(val);
+                                },
+                                // items: [],
+                              ),
+                            ),
+                          )),
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            selectedSection = index;
+                            print('$index and section is $selectedSection');
+                            showAssignment = true;
+                            _videoController!.pause();
+                            enablePauseScreen = !enablePauseScreen;
+                          });
+                        },
+                        child: Container(
+                          width: screenWidth/3.1,
+                          height: screenHeight/20,
+                          decoration: BoxDecoration(
+                            color: Colors.purpleAccent[200],
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: Align(
+                            alignment: Alignment.center,
+                              child: Text('${index+1} Assignment',)),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                // return Padding(
+                //   padding: const EdgeInsets.all(8.0),
+                //   child: Container(
+                //     child: Column(
+                //       children: <Widget>[
+                //         Container(
+                //           padding: const EdgeInsets.symmetric(
+                //               horizontal: 15, vertical: 17),
+                //           decoration: new BoxDecoration(
+                //             borderRadius: BorderRadius.circular(20.0),
+                //             color: Colors.white,
+                //             boxShadow: [
+                //               BoxShadow(
+                //                   blurRadius: 10,
+                //                   color: Colors.black26,
+                //                   offset: Offset(0, 2))
+                //             ],
+                //           ),
+                //           child: new Row(
+                //             mainAxisSize: MainAxisSize.max,
+                //             crossAxisAlignment: CrossAxisAlignment.center,
+                //             children: <Widget>[
+                //               // Icon(Icons.card_travel, color: Color(0xFF307DF1),),
+                //               SizedBox(
+                //                 width: 10,
+                //               ),
+                //               Expanded(
+                //                 child: GestureDetector(
+                //                   onTap: () {
+                //                     this.isShow = !this.isShow;
+                //                     _runExpandCheck(context);
+                //                     print(
+                //                         "1111111111111111111111111111111111111111111");
+                //                     setState(() {});
+                //                   },
+                //                   child: Text(
+                //                     datamap.entries.elementAt(index).key,
+                //                     style: TextStyle(
+                //                         color: Color(0xFF307DF1), fontSize: 16),
+                //                   ),
+                //                 ),
+                //               ),
+                //               Align(
+                //                 alignment: Alignment(1, 0),
+                //                 child: Icon(
+                //                   isShow
+                //                       ? Icons.arrow_drop_down
+                //                       : Icons.arrow_right,
+                //                   color: Color(0xFF307DF1),
+                //                   size: 15,
+                //                 ),
+                //               ),
+                //             ],
+                //           ),
+                //         ),
+                //         SizeTransition(
+                //             axisAlignment: 1.0,
+                //             sizeFactor: animation,
+                //             child: Center(
+                //               child: Container(
+                //                   margin: const EdgeInsets.only(bottom: 10),
+                //                   padding: const EdgeInsets.only(bottom: 10),
+                //                   decoration: new BoxDecoration(
+                //                     borderRadius: BorderRadius.only(
+                //                         bottomLeft: Radius.circular(20),
+                //                         bottomRight: Radius.circular(20)),
+                //                     color: Colors.white,
+                //                     boxShadow: [
+                //                       BoxShadow(
+                //                           blurRadius: 4,
+                //                           color: Colors.black26,
+                //                           offset: Offset(0, 4))
+                //                     ],
+                //                   ),
+                //                   child: SizedBox(
+                //                     width:
+                //                         MediaQuery.of(context).size.width * 0.87,
+                //                     child: _buildDropListOptions(
+                //                         dropListModel.listOptionItems, context),
+                //                   )),
+                //             )),
+                //         Divider(
+                //           color: Colors.grey.shade300,
+                //           height: 1,
+                //         )
+                //       ],
+                //     ),
+                //   ),
+                // );
+                // getValueData(0);
+                // new GestureDetector(
+                //   onTap: () async {
+                //     // await getValueData(index);
+                //     print(index);
+                //   },
+                //   child: Padding(
+                //     padding: const EdgeInsets.all(8.0),
+                //     child: Center(
+                //         child: SelectDropList(
+                //       OptionItem(
+                //           id: 'null', title: datamap.entries.elementAt(index).key),
+                //       DropListModel(resultValue),
+                //       (optionItem) {
+                //         optionItemSelected = optionItem;
+                //         setState(() {});
+                //       },
+                //     )),
+                //   ),
+                // );
+              }),
+
+          // child: StreamBuilder(
+          //   stream: FirebaseFirestore.instance
+          //       .collection('courses')
+          //       .doc(courseId)
+          //       .collection('Modules')
+          //       .doc(moduleId)
+          //       .collection('Topics')
+          //       .orderBy('sr')
+          //       .snapshots(),
+          //   builder: (BuildContext context, AsyncSnapshot snapshot) {
+          //     if (snapshot.hasData) {
+          //       return ListView.builder(
+          //           shrinkWrap: true,
+          //           itemCount: snapshot.data!.docs.length,
+          //           itemBuilder: (context, index) {
+          //             Map<String, dynamic> map = snapshot.data!.docs[index].data();
+          //             return Card(
+          //               elevation: 0,
+          //               color: _currentVideoIndex.value == index
+          //                   ? Color(0xFFDDD2FB)
+          //                   : Colors.white,
+          //               child: ListTile(
+          //                 onTap: () {
+          //                   VideoScreen.currentSpeed.value = 1.0;
+          //                   intializeVidController(
+          //                     _listOfVideoDetails[index].videoUrl,
+          //                   );
+          //                   _currentVideoIndex.value = index;
+          //                 },
+          //                 leading: Padding(
+          //                   padding: const EdgeInsets.all(8.0),
+          //                   child: Text('${index + 1}'),
+          //                 ),
+          //                 title: Text(
+          //                   map['name'],
+          //                   textScaleFactor: min(
+          //                     horizontalScale,
+          //                     verticalScale,
+          //                   ),
+          //                   style: TextStyle(
+          //                     fontWeight: FontWeight.w500,
+          //                     fontSize: 17,
+          //                     fontFamily: "Medium",
+          //                   ),
+          //                 ),
+          //                 trailing:
+          //                 // InkWell(
+          //                 //   onTap: () async {
+          //                 //     var directory =
+          //                 //         await getApplicationDocumentsDirectory();
+          //                 //     _currentVideoIndex.value = index;
+          //                 //     if (stopdownloading == true) {
+          //                 //       download(
+          //                 //           dio: Dio(),
+          //                 //           fileName: map['name'],
+          //                 //           url: map['url'],
+          //                 //           savePath:
+          //                 //               "${directory.path}/${map['name'].replaceAll(' ', '')}.mp4",
+          //                 //           topicName: map['name'],
+          //                 //           courseName: widget.courseName);
+          //                 //       setState(() {
+          //                 //         stopdownloading = false;
+          //                 //       });
+          //                 //     }
+          //                 //   },
+          //                 //   child: SelectDropList(
+          //                 //     this.optionItemSelected,
+          //                 //     this.dropListModel,
+          //                 //     (optionItem) {
+          //                 //       optionItemSelected = optionItem;
+          //                 //       setState(() {});
+          //                 //     },
+          //                 //   ),
+          //                 //   // child: _currentVideoIndex.value == index
+          //                 //   // ?
+          //                 //   // ? Stack(
+          //                 //   //     children: [
+          //                 //   //       Positioned(
+          //                 //   //         bottom: 0,
+          //                 //   //         left: 0,
+          //                 //   //         right: 0,
+          //                 //   //         top: 0,
+          //                 //   //         child: Icon(
+          //                 //   //           Icons.download_for_offline_rounded,
+          //                 //   //         ),
+          //                 //   //       ),
+          //                 //   //       SizedBox(
+          //                 //   //         height: 30,
+          //                 //   //         width: 30,
+          //                 //   //         child: CircularProgressIndicator(
+          //                 //   //           value: _downloadProgress.value,
+          //                 //   //           color: Color(0xFF7860DC),
+          //                 //   //           backgroundColor: Color(0xFFDDD2FB),
+          //                 //   //         ),
+          //                 //   //       )
+          //                 //   //     ],
+          //                 //   //   )
+          //                 //   // : Icon(
+          //                 //   //     Icons.download_for_offline_rounded,
+          //                 //   //   ),
+          //                 // ),
+          //                 SelectDropList(
+          //                     this.optionItemSelected,
+          //                     this.dropListModel,
+          //                     (optionItem) {
+          //                       optionItemSelected = optionItem;
+          //                       setState(() {});
+          //                     },
+          //                   ),
+          //               ),
+          //             );
+          //           });
+          // } else {
+          //   return Padding(
+          //     padding: const EdgeInsets.all(20),
+          //     child: Lottie.asset('assets/load-shimmer.json',
+          //         fit: BoxFit.fill, reverse: true),
+          //   );
+          // }
+          // },
+        ),
+      ),
+    );
+  }
+
   Widget _buildVideoDetailsListTile(
       double horizontalScale, double verticalScale) {
     return Container(
@@ -760,7 +1289,7 @@ class _VideoScreenState extends State<VideoScreen> {
           if (snapshot.hasData) {
             return ListView.builder(
                 shrinkWrap: true,
-                itemCount: snapshot.data!.docs.length,
+                itemCount: courseData?.length,
                 itemBuilder: (context, index) {
                   Map<String, dynamic> map = snapshot.data!.docs[index].data();
                   return Card(
@@ -839,7 +1368,6 @@ class _VideoScreenState extends State<VideoScreen> {
                         ),
                         ListTile(
                           onTap: () {
-                            showAssignment = !showAssignment;
                             _videoController!.pause();
                             enablePauseScreen = !enablePauseScreen;
                           },

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloudyml_app2/main.dart';
 import 'package:cloudyml_app2/screens/exlusive_offer/constants_offerscreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,12 +14,17 @@ import 'dart:convert';
 import '../../Providers/UserProvider.dart';
 import '../../globals.dart';
 import '../../home.dart';
+import '../../homepage.dart';
 import '../../models/course_details.dart';
 
 class SeasonOffer extends StatefulWidget {
 
+  final days;
+  final hours;
+  final minutes;
+  final seconds;
 
-  const SeasonOffer({Key? key}) : super(key: key);
+  SeasonOffer({Key? key, required this.days, this.hours, this.minutes, this.seconds}) : super(key: key);
 
   @override
   State<SeasonOffer> createState() => _SeasonOfferState();
@@ -26,8 +32,6 @@ class SeasonOffer extends StatefulWidget {
 
 class _SeasonOfferState extends State<SeasonOffer> {
 
-  Timer? countDownTimer;
-  Duration myDuration = Duration(days: 5);
   final _loginkey = GlobalKey<FormState>();
   String? name = '';
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -162,15 +166,15 @@ class _SeasonOfferState extends State<SeasonOffer> {
   void initState() {
     super.initState();
 
+    startTimer();
+
+    getCourseName();
+
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
 
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
 
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
-
-    getCourseName();
-
-    startTimer();
     if (myDuration.inDays == 0) {
       stopTimer();
     } else {
@@ -208,6 +212,9 @@ class _SeasonOfferState extends State<SeasonOffer> {
       }
     });
   }
+
+  Timer? countDownTimer;
+  Duration myDuration = Duration(days: 5);
 
   bool newValue = false;
   String addOnAmount = '';
@@ -257,7 +264,7 @@ class _SeasonOfferState extends State<SeasonOffer> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            '$days',
+                            '${days}',
                             style: textStyle1,
                           ),
                           Text(
@@ -277,7 +284,7 @@ class _SeasonOfferState extends State<SeasonOffer> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('$hours', style: textStyle1),
+                          Text('${hours}', style: textStyle1),
                           Text("HR", style: textStyle2),
                         ],
                       ),
@@ -292,7 +299,7 @@ class _SeasonOfferState extends State<SeasonOffer> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('$minutes', style: textStyle1),
+                          Text('${minutes}', style: textStyle1),
                           Text("MIN", style: textStyle2),
                         ],
                       ),
@@ -307,7 +314,7 @@ class _SeasonOfferState extends State<SeasonOffer> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('$seconds', style: textStyle1),
+                          Text('${seconds}', style: textStyle1),
                           Text("SEC", style: textStyle2),
                         ],
                       ),
